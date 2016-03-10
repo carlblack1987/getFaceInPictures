@@ -36,10 +36,9 @@ vector<string> templist;
 string outputpath = "E:\\faceTemplate\\FaceOutput\\";
 
 Mat norm_0_255(const Mat& src) {
-	// 构建返回图像矩阵
 	Mat dst;
 	switch (src.channels()) {
-	case 1://根据图像通道情况选择不同的回归函数
+	case 1:
 		cv::normalize(src, dst, 0, 255, NORM_MINMAX, CV_8UC1);
 		break;
 	case 3:
@@ -922,7 +921,7 @@ Mat FaceTools::getVerticalProjection(Mat &src) {
 	threshold(srcImage, srcImage, 30, 255, CV_THRESH_BINARY);
 	//imshow("d",srcImage);
 	int *colheight = new int[srcImage.cols];
-	memset(colheight, 0, srcImage.cols * 4);  //数组必须赋初值为零，否则出错。无法遍历数组。  
+	memset(colheight, 0, srcImage.cols * 4);
 	//  memset(colheight,0,src->width*4);    
 	// CvScalar value;   
 	int value;
@@ -933,7 +932,7 @@ Mat FaceTools::getVerticalProjection(Mat &src) {
 			value = srcImage.at<uchar>(i, j);
 			if (value == 255)
 			{
-				colheight[j]++; //统计每列的白色像素点    
+				colheight[j]++;
 			}
 
 		}
@@ -942,14 +941,14 @@ Mat FaceTools::getVerticalProjection(Mat &src) {
 	for (int i = 0; i<srcImage.rows; i++)
 		for (int j = 0; j<srcImage.cols; j++)
 		{
-			value = 0;  //设置为黑色。  
+			value = 0;
 			histogramImage.at<uchar>(i, j) = value;
 		}
 	//imshow("d", histogramImage);
 	for (int i = 0; i<srcImage.cols; i++)
 		for (int j = 0; j<colheight[i]; j++)
 		{
-			value = 255;  //设置为白色  
+			value = 255;
 			histogramImage.at<uchar>(j, i) = value;
 		}
 
@@ -968,7 +967,7 @@ Mat FaceTools::getHorizontalProjection(Mat &src) {
 	threshold(srcImage, srcImage, 30, 255, CV_THRESH_BINARY);
 	//imshow("d",srcImage);
 	int *rowheight = new int[srcImage.rows];
-	memset(rowheight, 0, srcImage.rows * 4);  //数组必须赋初值为零，否则出错。无法遍历数组。  
+	memset(rowheight, 0, srcImage.rows * 4);
 	//  memset(colheight,0,src->width*4);    
 	// CvScalar value;   
 	int value;
@@ -979,7 +978,7 @@ Mat FaceTools::getHorizontalProjection(Mat &src) {
 			value = srcImage.at<uchar>(j, i);
 			if (value == 255)
 			{
-				rowheight[j]++; //统计每行的白色像素点    
+				rowheight[j]++;
 			}
 			else
 				src2.ptr<Vec3b>(j)[i] = Vec3b(0, 0, 255);
@@ -990,14 +989,14 @@ Mat FaceTools::getHorizontalProjection(Mat &src) {
 	for (int i = 0; i<srcImage.rows; i++)
 		for (int j = 0; j<srcImage.cols; j++)
 		{
-			value = 0;  //设置为黑色。  
+			value = 0;
 			histogramImage.at<uchar>(i, j) = value;
 		}
 	//imshow("d", histogramImage);
 	for (int i = 0; i<srcImage.rows; i++)
 		for (int j = 0; j<rowheight[i]; j++)
 		{
-			value = 255;  //设置为白色  
+			value = 255;
 			histogramImage.at<uchar>(i, j) = value;
 		}
 
