@@ -389,9 +389,9 @@ Mat FaceTools::templateMatch(Mat &src, vector<string> templist, int match_method
 
 int FaceTools::detectFaceSkin(Mat &src) {
 	if (!src.empty()){
-		Mat frame = src.clone();
-		Mat finalresult = src.clone();
-		Mat faceArea;
+		Mat frame = src.clone(), finalresult = src.clone(), faceArea;
+		Mat faceBorder = getSobelBorder(frame);
+		
 		cvtColor(frame, grayframe, CV_BGR2GRAY);
 		equalizeHist(grayframe, testframe);
 		Mat thres_lab = this->GetSkin(frame, testframe);
@@ -428,6 +428,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		imshow("find", frame);
 		imshow("result", faceArea);
 		imshow("Eys Skin", eyeSkin);
+		imshow("Face Border", faceBorder);
 		waitKey();
 	}
 	else{
@@ -956,6 +957,22 @@ Mat FaceTools::getVerticalProjection(Mat &src) {
 	imshow("Vertical", histogramImage);
 
 	return histogramImage;
+}
+
+Mat FaceTools::getSobelBorder(Mat src) {
+	if (src.rows <= 0 || src.cols <= 0) {
+		cout << "Illegal size of face area." << endl;
+		exit(1);
+	}
+	else {
+		Mat dst_x, dst_y, dst;
+		Sobel(src, dst_x, src.depth(), 1, 0);
+		Sobel(src, dst_y, src.depth(), 0, 1);
+		convertScaleAbs(dst_x, dst_x);
+		convertScaleAbs(dst_y, dst_y);
+		addWeighted(dst_x, 0.5, dst_y, 0.5, 0, dst);
+		return dst;
+	}
 }
 
 Mat FaceTools::getHorizontalProjection(Mat &src) {

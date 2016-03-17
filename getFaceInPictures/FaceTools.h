@@ -94,6 +94,8 @@ public:
 	int findFacialFeatures(Mat &src, Mat &dst, Mat &result);
 	//Scan the hole
 	int scanHole(Mat &src, int type, int x, int y, Point &p1);
+	////Get the sobel border of the input image
+	Mat getSobelBorder(Mat src);
 	//Get the horizontal projection of the image
 	Mat getHorizontalProjection(Mat &src);
 	//Get the vertical projection of the image
