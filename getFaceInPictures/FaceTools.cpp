@@ -5,7 +5,7 @@ const float eyeSearchRowEndRatio = 0.500;
 const float mouthSearchRowStartRatio = 0.530;
 const float mouthSearchRowEndRatio = 0.909;
 const float noseSearchRowStartRatio = 0.5;
-const float noseSearchRowEndRatio = 0.7;
+const float noseSearchRowEndRatio = 0.75;
 const float feaSearchColStartRatio = 0.02;
 const float feaSearchColEndRatio = 0.98;
 const int noseMinSize = 30;
@@ -825,6 +825,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 			line(result, mouVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 255, 0), 1, 1, 0);
 			line(result, mouVec[0].centerNode, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
 			if (noseVec.size() == 2) {
+				cout << "2222" << endl;
 				noseCenter.x = (noseVec[0].centerNode.x + noseVec[1].centerNode.x) / 2;
 				noseCenter.y = (noseVec[0].centerNode.y + noseVec[1].centerNode.y) / 2;
 				line(result, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
@@ -832,10 +833,12 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 				line(result, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
 			}
 			else {
+				cout << "1111" << endl;
 				assumeNose(noseVec, eyeCenter, mouVec[0].centerNode);
-				line(result, noseVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
-				line(result, noseVec[0].centerNode, eyeVec[1].pupil, Scalar(0, 0, 255), 1, 1, 0);
-				line(result, noseVec[0].centerNode, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
+				noseCenter = noseVec[0].centerNode;
+				line(result, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
+				line(result, noseCenter, eyeVec[1].pupil, Scalar(0, 0, 255), 1, 1, 0);
+				line(result, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
 			}
 		}
 		//If just one eye and mouth are detected, just link them
@@ -844,7 +847,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 			line(result, mouVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 255, 0), 1, 1, 0);
 		}
 
-		calculateFace(result, eyeAreaOri, eyeVec, mouVec);
+		calculateFace(result, eyeAreaOri, eyeVec, mouVec, noseCenter);
 
 		dst = result;
 	}
@@ -1304,7 +1307,9 @@ Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) 
 					int height = abs(topNode.y - botNode.y);
 					int width = abs(topNode.x - botNode.x);
 					rectangle(result, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
-					if (centerY >= nosePosRange && centerY <= srcClone.rows - nosePosRange && height <= 40 && width <= 40) {
+					if (centerY >= nosePosRange && centerY <= srcClone.rows - nosePosRange 
+						&& centerX >= nosePosRange && centerX <= srcClone.cols - nosePosRange
+						&& height <= 40 && width <= 40) {
 						//if (width >= 40 && height <= 30) {
 						int size = abs((botNode.x - topNode.x) * (botNode.y - topNode.y));
 						int length = abs(botNode.x - topNode.x);
@@ -1399,14 +1404,14 @@ int FaceTools::moveNose(vector<noseInfo> &noseVec, int type) {
 	return 1;
 }
 
-int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec) {
+int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point noseCenter) {
 	if (src.rows <= 0 || src.cols <= 0) {
 		cout << "Invalid source exception." << endl;
 		return 0;
 	}
 
-	String msg, msg2, msg3;
-	float gradient_face = 0, inclined_face = 0, eye_size_com = 0, eye_offset = 0;
+	String msg, msg2, msg3, msg4;
+	float gradient_face = 0, inclined_face = 0, eye_size_com = 0, eye_offset = 0, nose_offset = 0, dis_nose = 0, dis_eyes = 0;
 	int angle_face, divided;
 	Point eyeCenter;
 	ostringstream os;
@@ -1439,10 +1444,6 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 
 		cout << "Inclined Rate: " << inclined_face << endl;
 
-		//Calculate the compare of sizes of eyes
-		//eye_size_com = (float)eyeVec[0].size / eyeVec[1].size;
-		//cout << "The size compare: " << eye_size_com << endl;
-
 		os.str("");
 		msg2 = "Inclined Rate: ";
 		os << inclined_face;
@@ -1463,8 +1464,25 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		os << eye_offset;
 		msg3 += os.str();
 
-		//Calculate the maximum offset of eyes
+		//Calculate the horizontal inclined ratio of the face according to nose
+		int nose_div = eyeCenter.x - mouVec[0].centerNode.x;
+		if (nose_div != 0) {
+			float a = (float)(eyeCenter.y - mouVec[0].centerNode.y) / (eyeCenter.x - mouVec[0].centerNode.x);
+			float b = (float)(eyeCenter.y - a * eyeCenter.x);
+			dis_nose = (float)abs((a * noseCenter.x - noseCenter.y + b) / (sqrt(a * a + 1)));
+		}
+		else {
+			dis_nose = (float)abs((noseCenter.x - eyeCenter.x));
+		}
+		dis_eyes = (float)sqrt(pow((eyeVec[0].pupil.y - eyeVec[1].pupil.y), 2) + pow((eyeVec[0].pupil.x - eyeVec[1].pupil.x), 2)) / 2;
+		nose_offset = dis_nose / dis_eyes;
 
+		cout << "The offset of nose: " << dis_nose << endl;
+
+		os.str("");
+		msg4 = "Nose Offset: ";
+		os << nose_offset;
+		msg4 += os.str();
 	}
 	//If just one eye and mouth are detected, just link them
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
@@ -1473,7 +1491,8 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 
 	putText(src, msg, Point(10, 20), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 	putText(src, msg2, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	putText(src, msg3, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+	//putText(src, msg3, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+	putText(src, msg4, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 
 	return 1;
 }

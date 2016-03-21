@@ -113,7 +113,7 @@ public:
 	//Move the nose position
 	int moveNose(vector<noseInfo> &noseVec, int type);
 	//Calculate the angle and display it on the screen
-	int calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec);
+	int calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point noseCenter);
 	//Change the mouth position if necessary
 	int changeMouPosition(vector<mouthInfo> &mouVec, int x, int y);
 };
