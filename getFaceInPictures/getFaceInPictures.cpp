@@ -65,10 +65,10 @@ int main(void)
 	//Left high
 	//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
 
-	// 20160220 Draw diagram 50
+	// Normal 0.03
 	//Mat frame = imread(picFilePath + "20160220122305 28.jpg");
-	//right 001 85 1.04
-	//Mat frame = imread(picFilePath + "20160220122305 29.jpg");
+	//right 001 0.19
+	Mat frame = imread(picFilePath + "20160220122305 29.jpg");
 	//right 002 
 	//Mat frame = imread(picFilePath + "20160220122305 30.jpg"); 
 	//right 003
@@ -77,15 +77,15 @@ int main(void)
 	//Mat frame = imread(picFilePath + "20160220122305 32.jpg");
 	//right 005
 	//Mat frame = imread(picFilePath + "20160220122305 34.jpg");
-	//left 001
+	//left 001 0.03
 	//Mat frame = imread(picFilePath + "20160220122305 42.jpg");
-	//left 002 
+	//left 002 0.41
 	//Mat frame = imread(picFilePath + "20160220122305 43.jpg");
-	//left 003
-	Mat frame = imread(picFilePath + "20160220122305 44.jpg");
-	//left 004
+	//left 003 0.57
+	//Mat frame = imread(picFilePath + "20160220122305 44.jpg");
+	//left 004 0.81
 	//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
-	//left 005
+	//left 005 1.05
 	//Mat frame = imread(picFilePath + "20160220122305 48.jpg");
 	//left 006
 	//Mat frame = imread(picFilePath + "20160220122305 50.jpg");
