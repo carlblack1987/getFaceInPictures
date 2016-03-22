@@ -428,7 +428,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		imshow("find", frame);
 		imshow("result", faceArea);
 		imshow("Eys Skin", eyeSkin);
-		imshow("Face Border", faceBorder);
+		//imshow("Face Border", faceBorder);
 		waitKey();
 	}
 	else{
@@ -792,6 +792,8 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 			mouVec[i].centerNode.y = (mouVec[i].topNode.y + mouVec[i].botNode.y) / 2;
 			//rectangle(result, mouVec[i].topNode, mouVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
 		}
+		Mat noseArea = getNoseArea(frame, eyeVec, mouVec);
+		imshow("nose area2", noseArea);
 		//Draw the nose
 		if (noseVec.size() == 0) {
 			cout << "No nose founded!!!" << endl;
@@ -1263,6 +1265,28 @@ Mat FaceTools::getExactMouth(Mat &src, vector<mouthInfo> &mouVec, int threshold)
 	}
 
 	return result;
+}
+
+Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec) {
+	Mat srcClone = src.clone();
+
+	if (eyeVec.size() == 2 && mouVec.size() == 1) {
+		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ? 
+			Range(eyeVec[1].pupil.y, mouVec[0].centerNode.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y), 
+			eyeVec[0].pupil.x > eyeVec[1].pupil.x ?
+			Range(eyeVec[1].pupil.x, eyeVec[0].pupil.x) : Range(eyeVec[0].pupil.x, eyeVec[1].pupil.x));
+	}
+	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
+		srcClone = srcClone(eyeVec[0].pupil.y > mouVec[0].centerNode.y ?
+			Range(mouVec[0].centerNode.y, eyeVec[0].pupil.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
+			eyeVec[0].pupil.x > mouVec[0].centerNode.x ?
+			Range(mouVec[0].centerNode.x - 20, eyeVec[0].pupil.x) : Range(eyeVec[0].pupil.x, mouVec[0].centerNode.x + 20));
+	}
+
+	cvtColor(srcClone, srcClone, CV_BGR2GRAY);
+	equalizeHist(srcClone, srcClone);
+
+	return srcClone;
 }
 
 Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) {
