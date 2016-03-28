@@ -33,102 +33,131 @@ string filename;
 // Function main
 int main(void)
 {
+	cout << "Please enter 1 to use video mode or 2 to use picture mode." << endl;
 	FaceTools facetool;
-	// Load the cascade
-	if (!face_cascade.load(face_cascade_name)){
-		printf("--(!)Error loading\n");
-		return (-1);
+	int openMode;
+	//1 means videomode, 2 means picture mode
+	cin >> openMode;
+
+	if (openMode == 1) {
+		VideoCapture cap(0);
+		cap.open(0);
+
+		while (1)
+		{
+			cap.read(frame);
+			cap >> frame;
+			if (!cap.read(frame))
+			{
+				printf("an error while taking the frame from cap");
+			}
+			else {
+				facetool.detectFaceSkinInVideo(frame);
+				if (cvWaitKey(33) == 27)
+					return 0;
+			}
+		}
 	}
+	else if (openMode == 2) {
+		// Load the cascade
+		if (!face_cascade.load(face_cascade_name)){
+			printf("--(!)Error loading\n");
+			return (-1);
+		}
 
-	// Read the image file
-	//Mat frame = imread(picFilePath + "20151125141830 00002.jpg");
-	//Eye closed status
-	//Mat frame = imread(picFilePath + "20151125141830 00012.jpg");
+		// Read the image file
+		//Mat frame = imread(picFilePath + "20151125141830 00002.jpg");
+		//Eye closed status
+		//Mat frame = imread(picFilePath + "20151125141830 00012.jpg");
 
-	//Mat frame = imread(picFilePath + "20151125141830 19478.jpg");
+		//Mat frame = imread(picFilePath + "20151125141830 19478.jpg");
 
-	// Inclining Status with glasses
-	//Mat frame = imread(picFilePath + "201512140935351_incline.jpg");
-	//Mat frame = imread(picFilePath + "201512140935428_incline.jpg");
+		// Inclining Status with glasses
+		//Mat frame = imread(picFilePath + "201512140935351_incline.jpg");
+		//Mat frame = imread(picFilePath + "201512140935428_incline.jpg");
 
-	// Inclining Status without glasses
-	//Mat frame = imread(picFilePath + "201601111035190_incline.jpg");
-	//Mat frame = imread(picFilePath + "201601111035257_incline.jpg");
+		// Inclining Status without glasses
+		//Mat frame = imread(picFilePath + "201601111035190_incline.jpg");
+		//Mat frame = imread(picFilePath + "201601111035257_incline.jpg");
 
-	//New border image
-	//Right low ok
-	//Mat frame = imread(picFilePath + "20160122115308 044.jpg");
-	//Left low ok
-	//Mat frame = imread(picFilePath + "20160122115308 082.jpg");
-	//Right high
-	//Mat frame = imread(picFilePath + "20160122115308 264.jpg");
-	//Left high
-	//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
+		//New border image
+		//Right low ok
+		//Mat frame = imread(picFilePath + "20160122115308 044.jpg");
+		//Left low ok
+		//Mat frame = imread(picFilePath + "20160122115308 082.jpg");
+		//Right high
+		//Mat frame = imread(picFilePath + "20160122115308 264.jpg");
+		//Left high
+		//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
 
-	// Normal 0.03
-	//Mat frame = imread(picFilePath + "20160220122305 28.jpg");
-	//right 001 0.19
-	//Mat frame = imread(picFilePath + "20160220122305 29.jpg");
-	//right 002 
-	//Mat frame = imread(picFilePath + "20160220122305 30.jpg");
-	//right 003
-	//Mat frame = imread(picFilePath + "20160220122305 31.jpg");
-	//right 004
-	//Mat frame = imread(picFilePath + "20160220122305 32.jpg");
-	//right 005
-	//Mat frame = imread(picFilePath + "20160220122305 34.jpg");
-	//left 001 0.03
-	Mat frame = imread(picFilePath + "20160220122305 42.jpg");
-	//left 002 0.41
-	//Mat frame = imread(picFilePath + "20160220122305 43.jpg");
-	//left 003 0.57
-	//Mat frame = imread(picFilePath + "20160220122305 44.jpg");
-	//left 004 0.81
-	//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
-	//left 005 1.05
-	//Mat frame = imread(picFilePath + "20160220122305 48.jpg");
-	//left 006
-	//Mat frame = imread(picFilePath + "20160220122305 50.jpg");
+		// Normal 0.03
+		Mat frame = imread(picFilePath + "20160220122305 28.jpg");
+		//right 001 0.19
+		//Mat frame = imread(picFilePath + "20160220122305 29.jpg");
+		//right 002 
+		//Mat frame = imread(picFilePath + "20160220122305 30.jpg");
+		//right 003
+		//Mat frame = imread(picFilePath + "20160220122305 31.jpg");
+		//right 004
+		//Mat frame = imread(picFilePath + "20160220122305 32.jpg");
+		//right 005
+		//Mat frame = imread(picFilePath + "20160220122305 34.jpg");
+		//left 001 0.03
+		//Mat frame = imread(picFilePath + "20160220122305 42.jpg");
+		//left 002 0.41
+		//Mat frame = imread(picFilePath + "20160220122305 43.jpg");
+		//left 003 0.57
+		//Mat frame = imread(picFilePath + "20160220122305 44.jpg");
+		//left 004 0.81
+		//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
+		//left 005 1.05
+		//Mat frame = imread(picFilePath + "20160220122305 48.jpg");
+		//left 006
+		//Mat frame = imread(picFilePath + "20160220122305 50.jpg");
 
-	//Atsushi Sann no pictures
-	//Mat frame = imread(picFilePath + "20160301133624 14.jpg");
+		//Atsushi Sann no pictures
+		//Mat frame = imread(picFilePath + "20160301133624 14.jpg");
 
-	vector<int> compression_params;
-	compression_params.push_back(CV_IMWRITE_PXM_BINARY);
-	compression_params.push_back(1);
-	
-	/*
-	//This four lines is to use the new skin detection rule, not finish yet.
-	imwrite(outputpath + "1_Temp.pgm", frame, compression_params);
+		vector<int> compression_params;
+		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
+		compression_params.push_back(1);
 
-	Mat frame2 = imread(picFilePath + "outPut.pgm", CV_LOAD_IMAGE_GRAYSCALE);
-	imshow("Test", frame2);
-	waitKey();
-	*/
+		/*
+		//This four lines is to use the new skin detection rule, not finish yet.
+		imwrite(outputpath + "1_Temp.pgm", frame, compression_params);
 
-	//for (int i = 0; i < frame2.rows; i++) {
-	//	for (int j = 0; j < frame2.cols; j++) {
-	//		// Get the pixel in BGR space: 
-	//		cout << i << " " << j << ": " << frame2.ptr<Vec3b>(i)[j] << endl;
-	//		Vec3b pix_bgr = frame2.ptr<Vec3b>(i)[j];
-	//		float B = pix_bgr.val[0];
-	//		float G = pix_bgr.val[1];
-	//		float R = pix_bgr.val[2];
-	//	}
-	//}
+		Mat frame2 = imread(picFilePath + "outPut.pgm", CV_LOAD_IMAGE_GRAYSCALE);
+		imshow("Test", frame2);
+		waitKey();
+		*/
 
-	if (!frame.empty()){
-		facetool.detectFaceSkin(frame);
+		//for (int i = 0; i < frame2.rows; i++) {
+		//	for (int j = 0; j < frame2.cols; j++) {
+		//		// Get the pixel in BGR space: 
+		//		cout << i << " " << j << ": " << frame2.ptr<Vec3b>(i)[j] << endl;
+		//		Vec3b pix_bgr = frame2.ptr<Vec3b>(i)[j];
+		//		float B = pix_bgr.val[0];
+		//		float G = pix_bgr.val[1];
+		//		float R = pix_bgr.val[2];
+		//	}
+		//}
+
+		if (!frame.empty()){
+			facetool.detectFaceSkin(frame);
+		}
+		else{
+			printf(" --(!) No captured frame -- Break!");
+			return 0;
+		}
+
+		int c = waitKey(10);
+
+		if (27 == char(c)){
+			return 0;
+		}
 	}
-	else{
-		printf(" --(!) No captured frame -- Break!");
-		return 0;
-	}
-
-	int c = waitKey(10);
-
-	if (27 == char(c)){
-		return 0;
+	else {
+		cout << "Unkown Operation" << endl;
 	}
 
 	return 0;
