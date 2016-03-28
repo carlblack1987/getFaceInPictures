@@ -72,6 +72,8 @@ public:
 	Mat templateMatch(Mat &src, vector<string> templist, int match_method);
 	//Detect face by skin
 	int detectFaceSkin(Mat &src);
+	//Detect face by skin from live video
+	int detectFaceSkinInVideo(Mat &src);
 	//Erase extra object in the image
 	int processImage(Mat &src, Mat &dst);
 	//Erase extra object in the image

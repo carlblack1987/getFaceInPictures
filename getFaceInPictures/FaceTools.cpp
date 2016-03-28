@@ -14,6 +14,7 @@ const int nosePosRange = 15;
 const int noseDistance = 30;
 const int noseVectorX = 17;
 const int noseVectorY = 13;
+const int noseAreaRange = 20;
 const int eyeMinSize = 115;
 const int mouMinSize = 150;
 const int mouthPosRange = 20;
@@ -437,6 +438,55 @@ int FaceTools::detectFaceSkin(Mat &src) {
 	}
 }
 
+int FaceTools::detectFaceSkinInVideo(Mat &src) {
+	if (!src.empty()){
+		Mat frame = src.clone(), finalresult = src.clone(), faceArea;
+		Mat faceBorder = getSobelBorder(frame);
+
+		cvtColor(frame, grayframe, CV_BGR2GRAY);
+		equalizeHist(grayframe, testframe);
+		Mat thres_lab = this->GetSkin(frame, testframe);
+		Mat testframe2 = this->maskOnImage(thres_lab, frame);
+		Mat testframe3, testframe4, eyeSkin;
+		erode(testframe2, testframe3, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+		dilate(testframe3, testframe4, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+		Mat orginal2 = testframe4.clone();
+		Mat testframe5 = testframe4.clone();
+		for (int i = 0; i < testframe5.rows; i++) {
+			for (int j = 0; j < testframe5.cols; j++) {
+				testframe5.ptr<Vec3b>(i)[j] = Vec3b(100, 100, 100);
+			}
+		}
+		this->processImage(testframe4, testframe5);
+		//imshow("7777", testframe5);
+		this->findFace(testframe5, frame, faceArea);
+		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
+		this->findMass(testframe5);
+		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+
+		vector<int> compression_params;
+		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
+		compression_params.push_back(1);
+
+		imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);
+		//imwrite(outputpath + "faceGet_Test.jpg", faceArea, CV_IMWRITE_PXM_BINARY);
+
+		imshow("original", src);
+		//imshow("gray222", grayframe);
+		imshow("gray", testframe);
+		imshow("face", orginal2);
+		imshow("operated", testframe5);
+		imshow("find", frame);
+		imshow("result", faceArea);
+		//imshow("Eys Skin", eyeSkin);
+		//imshow("Face Border", faceBorder);
+	}
+	else{
+		printf(" No input frame detected.");
+		return 0;
+	}
+}
+
 int FaceTools::processImage(Mat &src, Mat &dst) {
 	int size = 0;
 	int judgeM[1000][1000];
@@ -793,6 +843,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 			//rectangle(result, mouVec[i].topNode, mouVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
 		}
 		Mat noseArea = getNoseArea(frame, eyeVec, mouVec);
+		//Mat faceBorder = getSobelBorder(noseArea);
 		imshow("nose area2", noseArea);
 		//Draw the nose
 		if (noseVec.size() == 0) {
@@ -1274,17 +1325,24 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ? 
 			Range(eyeVec[1].pupil.y, mouVec[0].centerNode.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y), 
 			eyeVec[0].pupil.x > eyeVec[1].pupil.x ?
-			Range(eyeVec[1].pupil.x, eyeVec[0].pupil.x) : Range(eyeVec[0].pupil.x, eyeVec[1].pupil.x));
+			Range(eyeVec[1].pupil.x - noseAreaRange, eyeVec[0].pupil.x + noseAreaRange) : Range(eyeVec[0].pupil.x - noseAreaRange, eyeVec[1].pupil.x + noseAreaRange));
 	}
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
 		srcClone = srcClone(eyeVec[0].pupil.y > mouVec[0].centerNode.y ?
 			Range(mouVec[0].centerNode.y, eyeVec[0].pupil.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
 			eyeVec[0].pupil.x > mouVec[0].centerNode.x ?
-			Range(mouVec[0].centerNode.x - 20, eyeVec[0].pupil.x) : Range(eyeVec[0].pupil.x, mouVec[0].centerNode.x + 20));
+			Range(mouVec[0].centerNode.x - noseAreaRange, eyeVec[0].pupil.x) : Range(eyeVec[0].pupil.x, mouVec[0].centerNode.x + noseAreaRange));
 	}
 
 	cvtColor(srcClone, srcClone, CV_BGR2GRAY);
-	equalizeHist(srcClone, srcClone);
+	//equalizeHist(srcClone, srcClone);
+
+	/*Mat dst_x, dst_y, dst;
+	Sobel(srcClone, dst_x, srcClone.depth(), 1, 0);
+	Sobel(srcClone, dst_y, srcClone.depth(), 0, 1);
+	imshow("xxx", dst_x);
+	imshow("yyy", dst_y);
+	waitKey();*/
 
 	return srcClone;
 }
