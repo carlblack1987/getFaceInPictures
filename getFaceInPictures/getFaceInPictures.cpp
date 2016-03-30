@@ -91,7 +91,7 @@ int main(void)
 		//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
 
 		// Normal 0.03
-		Mat frame = imread(picFilePath + "20160220122305 28.jpg");
+		//Mat frame = imread(picFilePath + "20160220122305 28.jpg");
 		//right 001 0.19
 		//Mat frame = imread(picFilePath + "20160220122305 29.jpg");
 		//right 002 
@@ -107,7 +107,7 @@ int main(void)
 		//left 002 0.41
 		//Mat frame = imread(picFilePath + "20160220122305 43.jpg");
 		//left 003 0.57
-		//Mat frame = imread(picFilePath + "20160220122305 44.jpg");
+		Mat frame = imread(picFilePath + "20160220122305 44.jpg");
 		//left 004 0.81
 		//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
 		//left 005 1.05
