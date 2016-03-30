@@ -120,6 +120,8 @@ public:
 	int calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point noseCenter);
 	//Change the mouth position if necessary
 	int changeMouPosition(vector<mouthInfo> &mouVec, int x, int y);
+	//Draw the line on the image to identify facial features
+	void drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &noseCenter);
 };
 
 #endif
