@@ -20,8 +20,8 @@ CascadeClassifier face_cascade;
 string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
 string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20151125141830\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -65,30 +65,15 @@ int main(void)
 			return (-1);
 		}
 
-		// Read the image file
-		//Mat frame = imread(picFilePath + "20151125141830 00002.jpg");
-		//Eye closed status
-		//Mat frame = imread(picFilePath + "20151125141830 00012.jpg");
-
-		//Mat frame = imread(picFilePath + "20151125141830 19478.jpg");
-
-		// Inclining Status with glasses
-		//Mat frame = imread(picFilePath + "201512140935351_incline.jpg");
-		//Mat frame = imread(picFilePath + "201512140935428_incline.jpg");
-
-		// Inclining Status without glasses
-		//Mat frame = imread(picFilePath + "201601111035190_incline.jpg");
-		//Mat frame = imread(picFilePath + "201601111035257_incline.jpg");
-
 		//New border image
-		//Right low ok
+		//Right low ok 0.39
 		//Mat frame = imread(picFilePath + "20160122115308 044.jpg");
-		//Left low ok
+		//Left low ok 0.57
 		//Mat frame = imread(picFilePath + "20160122115308 082.jpg");
-		//Right high
+		//Right high ok 0.30
 		//Mat frame = imread(picFilePath + "20160122115308 264.jpg");
-		//Left high
-		//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
+		//Left high ok 0.31
+		Mat frame = imread(picFilePath + "20160122115308 307.jpg");
 
 		// Normal 0.03
 		//Mat frame = imread(picFilePath + "20160220122305 28.jpg");
@@ -107,7 +92,7 @@ int main(void)
 		//left 002 0.41
 		//Mat frame = imread(picFilePath + "20160220122305 43.jpg");
 		//left 003 0.57
-		Mat frame = imread(picFilePath + "20160220122305 44.jpg");
+		//Mat frame = imread(picFilePath + "20160220122305 44.jpg");
 		//left 004 0.81
 		//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
 		//left 005 1.05

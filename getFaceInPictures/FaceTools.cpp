@@ -9,13 +9,13 @@ const float noseSearchRowEndRatio = 0.75;
 const float feaSearchColStartRatio = 0.02;
 const float feaSearchColEndRatio = 0.98;
 const int noseMinSize = 30;
-const int noseMaxSize = 160;
+const int noseMaxSize = 200;
 const int nosePosRange = 15;
 const int noseDistance = 30;
 const int noseVectorX = 17;
 const int noseVectorY = 13;
 const int noseAreaRange = 20;
-const int eyeMinSize = 115;
+const int eyeMinSize = 100;
 const int mouMinSize = 150;
 const int mouthPosRange = 20;
 const int eyesDistance = 70;
@@ -790,7 +790,6 @@ int FaceTools::findFacialFeatures_20160128(Mat &src, Mat &dst, Mat &result) {
 int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 	vector<eyeInfo> eyeVec;
 	vector<mouthInfo> mouVec;
-	vector<noseInfo> noseVec;
 
 	Point noseCenter;
 
@@ -807,9 +806,6 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		//Generate a new mat only contains mouth area
 		Mat mouthAreaOri = faceBin(Range(frame.rows * mouthSearchRowStartRatio, frame.rows * mouthSearchRowEndRatio), 
 			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
-		//Generate a new mat only contains nose area
-		Mat noseAreaOri = faceBin(Range(frame.rows * noseSearchRowStartRatio, frame.rows * noseSearchRowEndRatio),
-			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
 
 		Mat eyeResult = getExactEyes(eyeAreaOri, eyeVec, eyeMinSize);
 		Mat mouthResult = getExactMouth(mouthAreaOri, mouVec, mouMinSize);
@@ -818,89 +814,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		imshow("Mouth", mouthResult);
 		//imshow("Nose", noseResult);
 
-		Point eyeCenter, noseStart;
-		//Draw the pupil
-		for (int i = 0; i < eyeVec.size(); i++) {
-			eyeVec[i].pupil.x += frame.cols * feaSearchColStartRatio;
-			eyeVec[i].pupil.y += frame.rows * eyeSearchRowStartRatio;
-			circle(result, eyeVec[i].pupil, 3, 1234);
-			//imshow("eye1", result);
-		}
-		//Draw the mouth
-		for (int i = 0; i < mouVec.size(); i++) {
-			mouVec[i].topNode.x += frame.cols * feaSearchColStartRatio;
-			mouVec[i].topNode.y += frame.rows * mouthSearchRowStartRatio;
-			mouVec[i].botNode.x += frame.cols * feaSearchColStartRatio;
-			mouVec[i].botNode.y += frame.rows * mouthSearchRowStartRatio;
-			mouVec[i].centerNode.x = (mouVec[i].topNode.x + mouVec[i].botNode.x) / 2;
-			mouVec[i].centerNode.y = (mouVec[i].topNode.y + mouVec[i].botNode.y) / 2;
-			//rectangle(result, mouVec[i].topNode, mouVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
-		}
-		Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
-		Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
-		//Mat faceBorder = getSobelBorder(noseArea);
-		imshow("nose area2", noseArea);
-		imshow("Nose", noseResult);
-		//Draw the nose
-		if (noseVec.size() == 0) {
-			cout << "No nose founded!!!" << endl;
-			if (mouVec.size() > 0) {
-				noseInfo temp;
-				temp.botNode = Point(mouVec[0].botNode.x, mouVec[0].botNode.y - 40);
-				temp.topNode = Point(mouVec[0].topNode.x, mouVec[0].topNode.y - 40);
-				temp.size = 100;
-				temp.centerNode = Point((mouVec[0].topNode.x + mouVec[0].botNode.x) / 2, (mouVec[0].topNode.y + mouVec[0].botNode.y - 80) / 2);
-				temp.length = abs(temp.botNode.x - temp.topNode.x);
-				noseVec.push_back(temp);
-			}
-		}
-		else {
-			cout << noseVec.size() << " noses founded!!!" << endl;
-			for (int i = 0; i < noseVec.size(); i++) {
-				noseVec[i].topNode.x += noseStart.x;
-				noseVec[i].topNode.y += noseStart.y;
-				noseVec[i].botNode.x += noseStart.x;
-				noseVec[i].botNode.y += noseStart.y;
-				/*noseVec[i].topNode.x += frame.cols * feaSearchColStartRatio;
-				noseVec[i].topNode.y += frame.rows * noseSearchRowStartRatio;
-				noseVec[i].botNode.x += frame.cols * feaSearchColStartRatio;
-				noseVec[i].botNode.y += frame.rows * noseSearchRowStartRatio;*/
-				noseVec[i].centerNode.x = (noseVec[i].topNode.x + noseVec[i].botNode.x) / 2;
-				noseVec[i].centerNode.y = (noseVec[i].topNode.y + noseVec[i].botNode.y) / 2;
-				//rectangle(result, mouVec[i].topNode, mouVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
-			}
-		}
-		//If both eyes and mouth are detected, draw a triangle
-		//changeMouPosition(mouVec, -18, 8);
-		if (eyeVec.size() == 2 && mouVec.size() == 1) {
-			eyeCenter.x = (eyeVec[0].pupil.x + eyeVec[1].pupil.x) / 2;
-			eyeCenter.y = (eyeVec[0].pupil.y + eyeVec[1].pupil.y) / 2;
-			line(result, mouVec[0].centerNode, eyeCenter, Scalar(0, 255, 0), 1, 1, 0);
-			line(result, eyeVec[0].pupil, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
-			line(result, mouVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 255, 0), 1, 1, 0);
-			line(result, mouVec[0].centerNode, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
-			if (noseVec.size() == 2) {
-				cout << "2222" << endl;
-				noseCenter.x = (noseVec[0].centerNode.x + noseVec[1].centerNode.x) / 2;
-				noseCenter.y = (noseVec[0].centerNode.y + noseVec[1].centerNode.y) / 2;
-				line(result, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
-				line(result, noseCenter, eyeVec[1].pupil, Scalar(0, 0, 255), 1, 1, 0);
-				line(result, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
-			}
-			else {
-				cout << "1111" << endl;
-				assumeNose(noseVec, eyeCenter, mouVec[0].centerNode);
-				noseCenter = noseVec[0].centerNode;
-				line(result, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
-				line(result, noseCenter, eyeVec[1].pupil, Scalar(0, 0, 255), 1, 1, 0);
-				line(result, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
-			}
-		}
-		//If just one eye and mouth are detected, just link them
-		else if (eyeVec.size() == 1 && mouVec.size() == 1) {
-			//line(result, eyeVec[0].pupil, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
-			line(result, mouVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 255, 0), 1, 1, 0);
-		}
+		drawFacialFeatures(result, faceBin, eyeVec, mouVec, noseCenter);
 
 		calculateFace(result, eyeAreaOri, eyeVec, mouVec, noseCenter);
 
@@ -1117,8 +1031,6 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 				//cout << "Eye Pos: " << i << " " << j << endl;
 				size = 0;
 				this->getObjectSize(srcClone, 2, i, j, size, judgeM);
-				if (size > 0)
-					cout << "current EyeObject size: " << size << endl;
 				//If object size is less than 100 * 100, just filter it.
 				if (size > threshold) {
 					Point topNode(j, i);
@@ -1162,7 +1074,8 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 							cout << "Push object222" << endl;
 							if (dis >= eyesDistance)
 								eyeVec.push_back(temp);
-							else if (size > eyeVec[0].size)
+							//else if (size > eyeVec[0].size)
+							else if (centerY > eyeVec[0].cenNode.y)
 								eyeVec[0] = temp;
 						}
 						else {
@@ -1203,6 +1116,9 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 								eyeVec[minIndex] = temp;
 							}*/
 						}
+					}
+					else {
+						cout << "Object abandoned!" << endl;
 					}
 
 					//rectangle(result, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
@@ -1633,4 +1549,104 @@ int FaceTools::findMass(Mat &src) {
 		circle(src, Point(centerX, centerY), 3, 1234);
 	}
 	return 1;
+}
+
+void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &noseCenter) {
+	vector<noseInfo> noseVec;
+	Point eyeCenter, noseStart;
+	//Change coordinates of eyes from eye's area to face's area
+	for (int i = 0; i < eyeVec.size(); i++) {
+		eyeVec[i].pupil.x += src.cols * feaSearchColStartRatio;
+		eyeVec[i].pupil.y += src.rows * eyeSearchRowStartRatio;
+		circle(src, eyeVec[i].pupil, 3, 1234);
+		//imshow("eye1", result);
+	}
+	//Change the coordinate of mouth from mouth's area to face's area
+	for (int i = 0; i < mouVec.size(); i++) {
+		mouVec[i].topNode.x += src.cols * feaSearchColStartRatio;
+		mouVec[i].topNode.y += src.rows * mouthSearchRowStartRatio;
+		mouVec[i].botNode.x += src.cols * feaSearchColStartRatio;
+		mouVec[i].botNode.y += src.rows * mouthSearchRowStartRatio;
+		mouVec[i].centerNode.x = (mouVec[i].topNode.x + mouVec[i].botNode.x) / 2;
+		mouVec[i].centerNode.y = (mouVec[i].topNode.y + mouVec[i].botNode.y) / 2;
+		//rectangle(result, mouVec[i].topNode, mouVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
+	}
+	//Get the nose area by using positions of eyes and mouth
+	Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
+	//Get the nose detection result
+	Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
+	//Mat faceBorder = getSobelBorder(noseArea);
+	imshow("nose area2", noseArea);
+	imshow("Nose", noseResult);
+	
+	//Draw the nose
+	if (noseVec.size() == 0) {
+		cout << "No nose founded!!!" << endl;
+		if (mouVec.size() > 0) {
+			noseInfo temp;
+			temp.botNode = Point(mouVec[0].botNode.x, mouVec[0].botNode.y - 40);
+			temp.topNode = Point(mouVec[0].topNode.x, mouVec[0].topNode.y - 40);
+			temp.size = 100;
+			temp.centerNode = Point((mouVec[0].topNode.x + mouVec[0].botNode.x) / 2, (mouVec[0].topNode.y + mouVec[0].botNode.y - 80) / 2);
+			temp.length = abs(temp.botNode.x - temp.topNode.x);
+			noseVec.push_back(temp);
+		}
+	}
+	else {
+		cout << noseVec.size() << " noses founded!!!" << endl;
+		for (int i = 0; i < noseVec.size(); i++) {
+			noseVec[i].topNode.x += noseStart.x;
+			noseVec[i].topNode.y += noseStart.y;
+			noseVec[i].botNode.x += noseStart.x;
+			noseVec[i].botNode.y += noseStart.y;
+			/*noseVec[i].topNode.x += frame.cols * feaSearchColStartRatio;
+			noseVec[i].topNode.y += frame.rows * noseSearchRowStartRatio;
+			noseVec[i].botNode.x += frame.cols * feaSearchColStartRatio;
+			noseVec[i].botNode.y += frame.rows * noseSearchRowStartRatio;*/
+			noseVec[i].centerNode.x = (noseVec[i].topNode.x + noseVec[i].botNode.x) / 2;
+			noseVec[i].centerNode.y = (noseVec[i].topNode.y + noseVec[i].botNode.y) / 2;
+			//rectangle(result, mouVec[i].topNode, mouVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
+		}
+	}
+	//If both eyes and mouth are detected, draw a triangle
+	//changeMouPosition(mouVec, -18, 8);
+	if (eyeVec.size() == 2 && mouVec.size() == 1) {
+		eyeCenter.x = (eyeVec[0].pupil.x + eyeVec[1].pupil.x) / 2;
+		eyeCenter.y = (eyeVec[0].pupil.y + eyeVec[1].pupil.y) / 2;
+		line(src, mouVec[0].centerNode, eyeCenter, Scalar(0, 255, 0), 1, 1, 0);
+		line(src, eyeVec[0].pupil, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
+		line(src, mouVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 255, 0), 1, 1, 0);
+		line(src, mouVec[0].centerNode, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
+		if (noseVec.size() == 2) {
+			noseCenter.x = (noseVec[0].centerNode.x + noseVec[1].centerNode.x) / 2;
+			noseCenter.y = (noseVec[0].centerNode.y + noseVec[1].centerNode.y) / 2;
+			line(src, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
+			line(src, noseCenter, eyeVec[1].pupil, Scalar(0, 0, 255), 1, 1, 0);
+			line(src, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
+		}
+		else {
+			assumeNose(noseVec, eyeCenter, mouVec[0].centerNode);
+			noseCenter = noseVec[0].centerNode;
+			line(src, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
+			line(src, noseCenter, eyeVec[1].pupil, Scalar(0, 0, 255), 1, 1, 0);
+			line(src, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
+		}
+	}
+	//If just one eye and mouth are detected, just link them
+	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
+		//line(result, eyeVec[0].pupil, eyeVec[1].pupil, Scalar(0, 255, 0), 1, 1, 0);
+		line(src, mouVec[0].centerNode, eyeVec[0].pupil, Scalar(0, 255, 0), 1, 1, 0);
+		if (noseVec.size() == 2) {
+			noseCenter.x = (noseVec[0].centerNode.x + noseVec[1].centerNode.x) / 2;
+			noseCenter.y = (noseVec[0].centerNode.y + noseVec[1].centerNode.y) / 2;
+			line(src, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
+			line(src, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
+		}
+		else {
+			assumeNose(noseVec, eyeCenter, mouVec[0].centerNode);
+			noseCenter = noseVec[0].centerNode;
+			line(src, noseCenter, eyeVec[0].pupil, Scalar(0, 0, 255), 1, 1, 0);
+			line(src, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
+		}
+	}
 }
