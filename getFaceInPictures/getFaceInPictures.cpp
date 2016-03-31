@@ -20,8 +20,8 @@ CascadeClassifier face_cascade;
 string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
 string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20151125141830\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -73,7 +73,7 @@ int main(void)
 		//Right high ok 0.30
 		//Mat frame = imread(picFilePath + "20160122115308 264.jpg");
 		//Left high ok 0.31
-		Mat frame = imread(picFilePath + "20160122115308 307.jpg");
+		//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
 
 		// Normal 0.03
 		//Mat frame = imread(picFilePath + "20160220122305 28.jpg");
@@ -82,7 +82,7 @@ int main(void)
 		//right 002 
 		//Mat frame = imread(picFilePath + "20160220122305 30.jpg");
 		//right 003
-		//Mat frame = imread(picFilePath + "20160220122305 31.jpg");
+		Mat frame = imread(picFilePath + "20160220122305 31.jpg");
 		//right 004
 		//Mat frame = imread(picFilePath + "20160220122305 32.jpg");
 		//right 005
