@@ -24,6 +24,8 @@ const int binaryThres = 50;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.40;
 const double eyeHeightRatioLimit = 0.40;
+const int cannyLowThres = 60;
+const int cannyHighThres = 120;
 
 CascadeClassifier face, mouth, eye, nose;
 Mat frame, grayframe, testframe;
@@ -793,10 +795,33 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 	Point noseCenter;
 
-	imshow("face1", src);
+	imshow("RGB Face", src);
 
 	if (!src.empty()){
 		Mat frame = src.clone();
+		Mat grayFrame = src.clone();
+		cvtColor(grayFrame, grayFrame, CV_BGR2GRAY);
+		//GaussianBlur(grayFrame, grayFrame, Size(9, 9), 2, 2);
+		//Use Canny operator to do border detection
+		Canny(grayFrame, grayFrame, cannyLowThres, cannyHighThres, 3);
+
+		vector<Vec3f> circles;
+		HoughCircles(grayFrame, circles, CV_HOUGH_GRADIENT, 1.5, 10, 50, 25, 1, 10);
+
+		//Draw Circle
+		cout << "circle size : " << circles.size() << endl;
+		for (size_t i = 0; i < circles.size(); i++)
+		{
+			Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+			int radius = cvRound(circles[i][2]);
+			//Draw center of circle
+			circle(grayFrame, center, 3, Scalar(0, 255, 0), -1, 8, 0);
+			//Draw outline of circle
+			circle(grayFrame, center, radius, Scalar(155, 50, 255), 3, 8, 0);
+		}
+		imshow("Gray Face", grayFrame);
+		waitKey();
+
 		Mat faceBin = getBinaryFormat(frame, binaryThres);
 		imshow("bin", faceBin);
 
