@@ -8,13 +8,13 @@ const float noseSearchRowStartRatio = 0.5;
 const float noseSearchRowEndRatio = 0.75;
 const float feaSearchColStartRatio = 0.02;
 const float feaSearchColEndRatio = 0.98;
-const int noseMinSize = 30;
+const int noseMinSize = 20;
 const int noseMaxSize = 200;
 const int nosePosRange = 15;
 const int noseDistance = 30;
 const int noseVectorX = 17;
 const int noseVectorY = 13;
-const int noseAreaRange = 20;
+const int noseAreaRange = 10;
 const int eyeMinSize = 100;
 const int mouMinSize = 150;
 const int mouthPosRange = 20;
@@ -820,7 +820,6 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 			circle(grayFrame, center, radius, Scalar(155, 50, 255), 3, 8, 0);
 		}
 		imshow("Gray Face", grayFrame);
-		waitKey();
 
 		Mat faceBin = getBinaryFormat(frame, binaryThres);
 		imshow("bin", faceBin);
@@ -1242,6 +1241,7 @@ Mat FaceTools::getExactMouth(Mat &src, vector<mouthInfo> &mouVec, int threshold)
 								temp.size = size;
 								temp.length = abs(botNode.x - topNode.x);
 								mouVec[0] = temp;
+								cout << "Replace Mouth object" << endl;
 							}
 						}
 					}
@@ -1351,7 +1351,7 @@ Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) 
 					rectangle(result, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
 					if (centerY >= nosePosRange && centerY <= srcClone.rows - nosePosRange 
 						&& centerX >= nosePosRange && centerX <= srcClone.cols - nosePosRange
-						&& height <= 40 && width <= 40) {
+						&& height <= 20 && width <= 20) {
 						//if (width >= 40 && height <= 30) {
 						int size = abs((botNode.x - topNode.x) * (botNode.y - topNode.y));
 						int length = abs(botNode.x - topNode.x);
@@ -1446,6 +1446,8 @@ int FaceTools::moveNose(vector<noseInfo> &noseVec, int type) {
 	return 1;
 }
 
+//Calculate the coefficient of inclined ratio by using formula:
+//p = 
 int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point noseCenter) {
 	if (src.rows <= 0 || src.cols <= 0) {
 		cout << "Invalid source exception." << endl;
@@ -1457,7 +1459,6 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 	int angle_face, divided;
 	Point eyeCenter;
 	ostringstream os;
-	stringstream ss;
 
 	//If both eyes and mouth are detected, draw a triangle
 	if (eyeVec.size() == 2 && mouVec.size() == 1) {
@@ -1469,11 +1470,11 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		eyeCenter.y = (eyeVec[0].pupil.y + eyeVec[1].pupil.y) / 2;
 		divided = eyeCenter.x - mouVec[0].centerNode.x;
 		if (divided == 0) {
-			angle_face = 90;
+			angle_face = 0;
 		}
 		else {
 			gradient_face = abs((eyeCenter.y - mouVec[0].centerNode.y) / (eyeCenter.x - mouVec[0].centerNode.x));
-			angle_face = atan(gradient_face) / PI * 180;
+			angle_face = abs(90 - atan(gradient_face) / PI * 180);
 		}
 		os << angle_face;
 		msg += os.str();
@@ -1598,6 +1599,7 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	}
 	//Get the nose area by using positions of eyes and mouth
 	Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
+	cout << "444" << endl;
 	//Get the nose detection result
 	Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
 	//Mat faceBorder = getSobelBorder(noseArea);
