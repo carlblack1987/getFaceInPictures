@@ -1454,8 +1454,9 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		return 0;
 	}
 
-	String msg, msg2, msg3, msg4;
+	String msg, msg2, msg3, msg4, msg5;
 	float gradient_face = 0, inclined_face = 0, eye_size_com = 0, eye_offset = 0, nose_offset = 0, dis_nose = 0, dis_eyes = 0;
+	float concentration = 0;
 	int angle_face, divided;
 	Point eyeCenter;
 	ostringstream os;
@@ -1480,7 +1481,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg += os.str();
 
 		//Calculate face angle
-		cout << "Line: " << sqrt(pow((eyeVec[0].pupil.y - mouVec[0].centerNode.y), 2) + pow((eyeVec[0].pupil.x - mouVec[0].centerNode.x), 2)) << endl;
+		/*cout << "Line: " << sqrt(pow((eyeVec[0].pupil.y - mouVec[0].centerNode.y), 2) + pow((eyeVec[0].pupil.x - mouVec[0].centerNode.x), 2)) << endl;
 		cout << "Line2: " << sqrt(pow((eyeVec[1].pupil.y - mouVec[0].centerNode.y), 2) + pow((eyeVec[1].pupil.x - mouVec[0].centerNode.x), 2)) << endl;
 		inclined_face = (sqrt(pow((eyeVec[0].pupil.y - mouVec[0].centerNode.y), 2) + pow((eyeVec[0].pupil.x - mouVec[0].centerNode.x), 2))) 
 			/ (sqrt(pow((eyeVec[1].pupil.y - mouVec[0].centerNode.y), 2) + pow((eyeVec[1].pupil.x - mouVec[0].centerNode.x), 2)));
@@ -1490,7 +1491,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		os.str("");
 		msg2 = "Inclined Rate: ";
 		os << inclined_face;
-		msg2 += os.str();
+		msg2 += os.str();*/
 
 		//Calculate the offset of the center of eyes
 		int centerY = (eyeVec[0].cenNode.y + eyeVec[1].cenNode.y) / 2;
@@ -1526,6 +1527,16 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg4 = "Nose Offset: ";
 		os << nose_offset;
 		msg4 += os.str();
+
+		//Calculate the final ratio of concentration
+		concentration = (float)angle_face / 90 + nose_offset;
+
+		cout << "Distraction: " << concentration << endl;
+
+		os.str("");
+		msg5 = "Distraction: ";
+		os << concentration;
+		msg5 += os.str();
 	}
 	//If just one eye and mouth are detected, just link them
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
@@ -1533,9 +1544,10 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 	}
 
 	putText(src, msg, Point(10, 20), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	putText(src, msg2, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+	//putText(src, msg2, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 	//putText(src, msg3, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	putText(src, msg4, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+	putText(src, msg4, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+	putText(src, msg5, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 
 	return 1;
 }
