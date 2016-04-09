@@ -122,6 +122,8 @@ public:
 	int changeMouPosition(vector<mouthInfo> &mouVec, int x, int y);
 	//Draw the line on the image to identify facial features
 	void drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &noseCenter);
+	//Avoid border out of bound for a mat
+	int getBoundValue(Mat src, int range, int type);
 };
 
 #endif

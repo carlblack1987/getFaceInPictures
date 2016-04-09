@@ -430,7 +430,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		imshow("operated", testframe5);
 		imshow("find", frame);
 		imshow("result", faceArea);
-		imshow("Eys Skin", eyeSkin);
+		//imshow("Eys Skin", eyeSkin);
 		//imshow("Face Border", faceBorder);
 		waitKey();
 	}
@@ -810,6 +810,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 		//Draw Circle
 		cout << "circle size : " << circles.size() << endl;
+		imshow("Gray Face Formal", grayFrame);
 		for (size_t i = 0; i < circles.size(); i++)
 		{
 			Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
@@ -1263,6 +1264,7 @@ Mat FaceTools::getExactMouth(Mat &src, vector<mouthInfo> &mouVec, int threshold)
 
 Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border) {
 	Mat srcClone = src.clone();
+	cout << "Get nose Area start" << endl;
 
 	if (eyeVec.size() == 2 && mouVec.size() == 1) {
 		if (eyeVec[0].pupil.y > eyeVec[1].pupil.y)
@@ -1270,14 +1272,16 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		else
 			border.y = eyeVec[0].pupil.y;
 		if (eyeVec[0].pupil.x > eyeVec[1].pupil.x)
-			border.x = eyeVec[1].pupil.x - noseAreaRange;
+			border.x = getBoundValue(src, eyeVec[1].pupil.x - noseAreaRange, 2);
 		else
 			border.x = eyeVec[0].pupil.x - noseAreaRange;
-
+		cout << "1111" << endl;
 		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ? 
 			Range(eyeVec[1].pupil.y, mouVec[0].centerNode.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y), 
-			eyeVec[0].pupil.x > eyeVec[1].pupil.x ?
-			Range(eyeVec[1].pupil.x - noseAreaRange, eyeVec[0].pupil.x + noseAreaRange) : Range(eyeVec[0].pupil.x - noseAreaRange, eyeVec[1].pupil.x + noseAreaRange));
+			eyeVec[0].pupil.x + noseAreaRange > eyeVec[1].pupil.x ?
+			Range(getBoundValue(src, eyeVec[1].pupil.x - noseAreaRange, 2), eyeVec[0].pupil.x + noseAreaRange) 
+			: Range(getBoundValue(src, eyeVec[0].pupil.x - noseAreaRange, 2), eyeVec[1].pupil.x + noseAreaRange));
+		cout << "2222" << endl;
 	}
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
 		if (eyeVec[0].pupil.y > mouVec[0].centerNode.y)
@@ -1285,14 +1289,16 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		else
 			border.y = eyeVec[0].pupil.y;
 		if (eyeVec[0].pupil.x > mouVec[0].centerNode.x)
-			border.x = mouVec[0].centerNode.x - noseAreaRange;
+			border.x = getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2);
 		else
 			border.x = eyeVec[0].pupil.x;
-
+		cout << "3333" << endl;
 		srcClone = srcClone(eyeVec[0].pupil.y > mouVec[0].centerNode.y ?
 			Range(mouVec[0].centerNode.y, eyeVec[0].pupil.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
-			eyeVec[0].pupil.x > mouVec[0].centerNode.x ?
-			Range(mouVec[0].centerNode.x - noseAreaRange, eyeVec[0].pupil.x) : Range(eyeVec[0].pupil.x, mouVec[0].centerNode.x + noseAreaRange));
+			eyeVec[0].pupil.x + noseAreaRange > mouVec[0].centerNode.x ?
+			Range(getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2), eyeVec[0].pupil.x) 
+			: Range(eyeVec[0].pupil.x, getBoundValue(src, mouVec[0].centerNode.x + noseAreaRange, 2)));
+		cout << "4444" << endl;
 	}
 
 	//cvtColor(srcClone, srcClone, CV_BGR2GRAY);
@@ -1309,6 +1315,7 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 }
 
 Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) {
+	cout << "Get exact nose start" << endl;
 	Mat srcClone = src.clone();
 	Mat srcClone2 = src.clone();
 	Mat result = src.clone();
@@ -1590,6 +1597,7 @@ int FaceTools::findMass(Mat &src) {
 }
 
 void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &noseCenter) {
+	cout << "Draw facial features start" << endl;
 	vector<noseInfo> noseVec;
 	Point eyeCenter, noseStart;
 	//Change coordinates of eyes from eye's area to face's area
@@ -1611,11 +1619,10 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	}
 	//Get the nose area by using positions of eyes and mouth
 	Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
-	cout << "444" << endl;
 	//Get the nose detection result
 	Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
 	//Mat faceBorder = getSobelBorder(noseArea);
-	imshow("nose area2", noseArea);
+	//imshow("nose area2", noseArea);
 	imshow("Nose", noseResult);
 	
 	//Draw the nose
@@ -1688,4 +1695,20 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 			line(src, noseCenter, mouVec[0].centerNode, Scalar(0, 0, 255), 1, 1, 0);
 		}
 	}
+}
+
+int FaceTools::getBoundValue(Mat src, int range, int type) {
+	if (type == 1) {
+		if (range >= src.rows)
+			return src.rows;
+		else if (range <= 0)
+			return 0;
+	}
+	else if (type == 2) {
+		if (range >= src.cols)
+			return src.cols;
+		else if (range <= 0)
+			return 0;
+	}
+	return range;
 }
