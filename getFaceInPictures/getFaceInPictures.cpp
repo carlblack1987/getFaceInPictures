@@ -20,8 +20,8 @@ CascadeClassifier face_cascade;
 string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
 string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20151125141830\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -71,7 +71,7 @@ int main(void)
 		//Left low ok 0.57
 		//Mat frame = imread(picFilePath + "20160122115308 082.jpg");
 		//Right high ok 0.30
-		//Mat frame = imread(picFilePath + "20160122115308 264.jpg");
+		Mat frame = imread(picFilePath + "20160122115308 264.jpg");
 		//Left high ok 0.31
 		//Mat frame = imread(picFilePath + "20160122115308 307.jpg");
 
@@ -96,7 +96,7 @@ int main(void)
 		//left 004 0.81 65 degrees 0.879749
 		//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
 		//left 005 1.05 70 degrees 1.09199
-		Mat frame = imread(picFilePath + "20160220122305 48.jpg");
+		//Mat frame = imread(picFilePath + "20160220122305 48.jpg");
 		//left 006
 		//Mat frame = imread(picFilePath + "20160220122305 50.jpg");
 
