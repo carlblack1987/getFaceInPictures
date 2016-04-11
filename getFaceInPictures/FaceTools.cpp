@@ -1162,7 +1162,6 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 		//Mat eyeTemp = src(tempEye);
 		Mat eyeTemp = srcImage(tempEye);
 		imshow("eye1", srcImage);
-
 		//-- Find Eye Centers
 		Point leftPupil = findEyeCenter(srcClone3, tempEye, "Left Eye");
 		//Point leftPupil = findEyeCenter(srcImage, tempEye, "Left Eye");
@@ -1314,6 +1313,54 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 	return srcClone;
 }
 
+Mat FaceTools::getNoseArea2(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border) {
+	Mat srcClone = src.clone();
+	cout << "Get nose Area start" << endl;
+
+	if (eyeVec.size() == 2 && mouVec.size() == 1) {
+		if (eyeVec[0].pupil.y > eyeVec[1].pupil.y)
+			border.y = eyeVec[1].botNode.y;
+		else
+			border.y = eyeVec[0].botNode.y;
+		if (eyeVec[0].pupil.x > eyeVec[1].pupil.x)
+			border.x = getBoundValue(src, eyeVec[1].botNode.x, 2);
+		else
+			border.x = eyeVec[0].botNode.x;
+		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ?
+			Range(eyeVec[1].botNode.y, mouVec[0].centerNode.y) : Range(eyeVec[0].botNode.y, mouVec[0].centerNode.y),
+			eyeVec[0].pupil.x > eyeVec[1].pupil.x ?
+			Range(getBoundValue(src, eyeVec[1].botNode.x, 2), eyeVec[0].topNode.x)
+			: Range(getBoundValue(src, eyeVec[0].botNode.x, 2), eyeVec[1].topNode.x));
+	}
+	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
+		if (eyeVec[0].pupil.y > mouVec[0].centerNode.y)
+			border.y = mouVec[0].centerNode.y;
+		else
+			border.y = eyeVec[0].pupil.y;
+		if (eyeVec[0].pupil.x > mouVec[0].centerNode.x)
+			border.x = getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2);
+		else
+			border.x = eyeVec[0].pupil.x;
+		srcClone = srcClone(eyeVec[0].pupil.y > mouVec[0].centerNode.y ?
+			Range(mouVec[0].centerNode.y, eyeVec[0].pupil.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
+			eyeVec[0].pupil.x + noseAreaRange > mouVec[0].centerNode.x ?
+			Range(getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2), eyeVec[0].pupil.x)
+			: Range(eyeVec[0].pupil.x, getBoundValue(src, mouVec[0].centerNode.x + noseAreaRange, 2)));
+	}
+
+	//cvtColor(srcClone, srcClone, CV_BGR2GRAY);
+	//equalizeHist(srcClone, srcClone);
+
+	/*Mat dst_x, dst_y, dst;
+	Sobel(srcClone, dst_x, srcClone.depth(), 1, 0);
+	Sobel(srcClone, dst_y, srcClone.depth(), 0, 1);
+	imshow("xxx", dst_x);
+	imshow("yyy", dst_y);
+	waitKey();*/
+
+	return srcClone;
+}
+
 Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) {
 	cout << "Get exact nose start" << endl;
 	Mat srcClone = src.clone();
@@ -1400,6 +1447,56 @@ Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) 
 	for (int i = 0; i < noseVec.size(); i++) {
 		rectangle(result, noseVec[i].topNode, noseVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
 	}
+
+	return result;
+}
+
+Mat FaceTools::getExactNoseGradient(Mat &src, vector<noseInfo> &noseVec, int threshold) {
+	cout << "Get exact nose start" << endl;
+	Mat srcClone = src.clone();
+	Mat srcClone2 = src.clone();
+	Mat result = src.clone();
+	Mat srcImage = src.clone();
+	cout << "Start Gaussian Blur" << endl;
+	cvtColor(srcClone, srcClone, CV_BGR2GRAY);
+	GaussianBlur(srcClone, srcClone, Size(9, 9), 2, 2);
+
+	int judgeM[1000][1000];
+	memset(judgeM, 0, sizeof(judgeM));
+	int size = 0;
+	if (srcClone.rows <= 0 || srcClone.cols <= 0) {
+		cout << "Illegal size of face area." << endl;
+		exit(1);
+	}
+	imshow("nose 222", srcClone);
+	//for (int i = 0; i < srcClone.rows; i++) {
+	//	for (int j = 0; j < srcClone.cols; j++) {
+	//		if (srcClone.at<uchar>(i, j) == 0){
+	//			//cout << "Eye Pos: " << i << " " << j << endl;
+	//			size = 0;
+	//			Rect tempEye(eyeVec[i].topNode, eyeVec[i].botNode);
+	//			//Mat eyeTemp = src(tempEye);
+	//			Mat eyeTemp = srcImage(tempEye);
+	//			imshow("eye1", srcImage);
+	//			//-- Find Eye Centers
+	//			Point leftPupil = findEyeCenter(srcClone3, tempEye, "Left Eye");
+	//		}
+	//	}
+	//}
+	Rect tempNose(Point(10, 10), Point(srcClone.cols - 10, srcClone.rows - 10));
+	Point nosePoint = findEyeCenter(srcClone, tempNose, "Nose Center");
+	circle(srcClone, nosePoint, 3, 1234);
+	imshow("Nose Test", srcClone);
+	////Draw rectangle on nose.
+	//for (int i = 0; i < noseVec.size(); i++) {
+	//	rectangle(result, noseVec[i].topNode, noseVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
+	//	for (int i = 0; i < eyeVec.size(); i++) {
+	//		eyeVec[i].pupil.x += src.cols * feaSearchColStartRatio;
+	//		eyeVec[i].pupil.y += src.rows * eyeSearchRowStartRatio;
+	//		circle(src, eyeVec[i].pupil, 3, 1234);
+	//		//imshow("eye1", result);
+	//	}
+	//}
 
 	return result;
 }
@@ -1619,8 +1716,11 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	}
 	//Get the nose area by using positions of eyes and mouth
 	Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
+	Mat noseAreaRGB = getNoseArea(src, eyeVec, mouVec, noseStart);
 	//Get the nose detection result
 	Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
+	imshow("Nose src", src);
+	getExactNoseGradient(noseAreaRGB, noseVec, noseMinSize);
 	//Mat faceBorder = getSobelBorder(noseArea);
 	//imshow("nose area2", noseArea);
 	imshow("Nose", noseResult);
