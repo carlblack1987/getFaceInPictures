@@ -110,8 +110,12 @@ public:
 	Mat getExactMouth(Mat &src_binary, vector<mouthInfo> &mouVec, int threshold);
 	//Get the general nose area
 	Mat getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border);
+	//Get the general nose area
+	Mat getNoseArea2(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border);
 	//Get the accurate position of nose, threshold is the filter size
 	Mat getExactNose(Mat &src_binary, vector<noseInfo> &noseVec, int threshold);
+	//Get the accurate position of nose, threshold is the filter size
+	Mat getExactNoseGradient(Mat &src_binary, vector<noseInfo> &noseVec, int threshold);
 	//Move the nose position if only one nose hole was found
 	int assumeNose(vector<noseInfo> &noseVec, Point eyeP, Point mouthP);
 	//Move the nose position
