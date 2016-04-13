@@ -84,7 +84,7 @@ int main(void)
 		//right 003 0.39 33 degrees 0.440347
 		//Mat frame = imread(picFilePath + "20160220122305 31.jpg");
 		//right 004 0.68 50 degrees 0.74404
-		Mat frame = imread(picFilePath + "20160220122305 32.jpg");
+		//Mat frame = imread(picFilePath + "20160220122305 32.jpg");
 		//right 005 0.78 60 degrees 0.848039
 		//Mat frame = imread(picFilePath + "20160220122305 34.jpg");
 		//left 001 0.033 5 degrees 0.0332
@@ -92,7 +92,7 @@ int main(void)
 		//left 002 0.41 38 degrees 0.535377
 		//Mat frame = imread(picFilePath + "20160220122305 43.jpg");
 		//left 003 0.57 45 degrees 0.725759
-		//Mat frame = imread(picFilePath + "20160220122305 44.jpg");
+		Mat frame = imread(picFilePath + "20160220122305 44.jpg");
 		//left 004 0.81 65 degrees 0.879749
 		//Mat frame = imread(picFilePath + "20160220122305 46.jpg");
 		//left 005 1.05 70 degrees 1.09199
