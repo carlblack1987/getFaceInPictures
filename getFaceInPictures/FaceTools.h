@@ -110,8 +110,6 @@ public:
 	Mat getExactMouth(Mat &src_binary, vector<mouthInfo> &mouVec, int threshold);
 	//Get the general nose area
 	Mat getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border);
-	//Get the general nose area
-	Mat getNoseArea2(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border);
 	//Get the accurate position of nose, threshold is the filter size
 	Mat getExactNose(Mat &src_binary, vector<noseInfo> &noseVec, int threshold);
 	//Get the accurate position of nose, threshold is the filter size
@@ -128,6 +126,12 @@ public:
 	void drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &noseCenter);
 	//Avoid border out of bound for a mat
 	int getBoundValue(Mat src, int range, int type);
+	//Compute the gradient of a mat
+	Mat computeMatGradient(const Mat &mat);
+	//Get the final gradient of the mat
+	Mat matrixMagnitude(const Mat &matX, const Mat &matY);
+	//Mark the peak point in a gradient mat
+	Mat findPeakPoint(const Mat &src, const Mat &grad, double threshold);
 };
 
 #endif

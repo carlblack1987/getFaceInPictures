@@ -1313,54 +1313,6 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 	return srcClone;
 }
 
-Mat FaceTools::getNoseArea2(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> &mouVec, Point &border) {
-	Mat srcClone = src.clone();
-	cout << "Get nose Area start" << endl;
-
-	if (eyeVec.size() == 2 && mouVec.size() == 1) {
-		if (eyeVec[0].pupil.y > eyeVec[1].pupil.y)
-			border.y = eyeVec[1].botNode.y;
-		else
-			border.y = eyeVec[0].botNode.y;
-		if (eyeVec[0].pupil.x > eyeVec[1].pupil.x)
-			border.x = getBoundValue(src, eyeVec[1].botNode.x, 2);
-		else
-			border.x = eyeVec[0].botNode.x;
-		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ?
-			Range(eyeVec[1].botNode.y, mouVec[0].centerNode.y) : Range(eyeVec[0].botNode.y, mouVec[0].centerNode.y),
-			eyeVec[0].pupil.x > eyeVec[1].pupil.x ?
-			Range(getBoundValue(src, eyeVec[1].botNode.x, 2), eyeVec[0].topNode.x)
-			: Range(getBoundValue(src, eyeVec[0].botNode.x, 2), eyeVec[1].topNode.x));
-	}
-	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
-		if (eyeVec[0].pupil.y > mouVec[0].centerNode.y)
-			border.y = mouVec[0].centerNode.y;
-		else
-			border.y = eyeVec[0].pupil.y;
-		if (eyeVec[0].pupil.x > mouVec[0].centerNode.x)
-			border.x = getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2);
-		else
-			border.x = eyeVec[0].pupil.x;
-		srcClone = srcClone(eyeVec[0].pupil.y > mouVec[0].centerNode.y ?
-			Range(mouVec[0].centerNode.y, eyeVec[0].pupil.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
-			eyeVec[0].pupil.x + noseAreaRange > mouVec[0].centerNode.x ?
-			Range(getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2), eyeVec[0].pupil.x)
-			: Range(eyeVec[0].pupil.x, getBoundValue(src, mouVec[0].centerNode.x + noseAreaRange, 2)));
-	}
-
-	//cvtColor(srcClone, srcClone, CV_BGR2GRAY);
-	//equalizeHist(srcClone, srcClone);
-
-	/*Mat dst_x, dst_y, dst;
-	Sobel(srcClone, dst_x, srcClone.depth(), 1, 0);
-	Sobel(srcClone, dst_y, srcClone.depth(), 0, 1);
-	imshow("xxx", dst_x);
-	imshow("yyy", dst_y);
-	waitKey();*/
-
-	return srcClone;
-}
-
 Mat FaceTools::getExactNose(Mat &src, vector<noseInfo> &noseVec, int threshold) {
 	cout << "Get exact nose start" << endl;
 	Mat srcClone = src.clone();
@@ -1468,7 +1420,7 @@ Mat FaceTools::getExactNoseGradient(Mat &src, vector<noseInfo> &noseVec, int thr
 		cout << "Illegal size of face area." << endl;
 		exit(1);
 	}
-	imshow("nose 222", srcClone);
+	//imshow("nose 222", srcClone);
 	//for (int i = 0; i < srcClone.rows; i++) {
 	//	for (int j = 0; j < srcClone.cols; j++) {
 	//		if (srcClone.at<uchar>(i, j) == 0){
@@ -1483,10 +1435,18 @@ Mat FaceTools::getExactNoseGradient(Mat &src, vector<noseInfo> &noseVec, int thr
 	//		}
 	//	}
 	//}
-	Rect tempNose(Point(10, 10), Point(srcClone.cols - 10, srcClone.rows - 10));
-	Point nosePoint = findEyeCenter(srcClone, tempNose, "Nose Center");
-	circle(srcClone, nosePoint, 3, 1234);
-	imshow("Nose Test", srcClone);
+	Mat gradientX = computeMatGradient(srcClone);
+	Mat gradientY = computeMatGradient(srcClone.t()).t();
+	Mat out = matrixMagnitude(gradientX, gradientY);
+	Mat peakOut = findPeakPoint(srcClone, out, 8.0);
+	imshow("Nose Before", srcClone);
+	imshow("Nose After", peakOut);
+	waitKey();
+	//imshow("Nose Gradient out", out);
+	//Rect tempNose(Point(10, 10), Point(srcClone.cols - 10, srcClone.rows - 10));
+	//Point nosePoint = findEyeCenter(srcClone, tempNose, "Nose Center");
+	//circle(srcClone, nosePoint, 3, 1234);
+	//imshow("Nose Test", srcClone);
 	////Draw rectangle on nose.
 	//for (int i = 0; i < noseVec.size(); i++) {
 	//	rectangle(result, noseVec[i].topNode, noseVec[i].botNode, Scalar(0, 255, 0), 1, 1, 0);
@@ -1811,4 +1771,49 @@ int FaceTools::getBoundValue(Mat src, int range, int type) {
 			return 0;
 	}
 	return range;
+}
+
+Mat FaceTools::computeMatGradient(const cv::Mat &mat) {
+	cv::Mat out(mat.rows, mat.cols, CV_64F);
+
+	for (int y = 0; y < mat.rows; ++y) {
+		const uchar *Mr = mat.ptr<uchar>(y);
+		double *Or = out.ptr<double>(y);
+
+		Or[0] = Mr[1] - Mr[0];
+		for (int x = 1; x < mat.cols - 1; ++x) {
+			Or[x] = (Mr[x + 1] - Mr[x - 1]) / 2.0;
+		}
+		Or[mat.cols - 1] = Mr[mat.cols - 1] - Mr[mat.cols - 2];
+	}
+
+	return out;
+}
+
+Mat FaceTools::matrixMagnitude(const Mat &matX, const Mat &matY) {
+	cv::Mat mags(matX.rows, matX.cols, CV_64F);
+	for (int y = 0; y < matX.rows; ++y) {
+		const double *Xr = matX.ptr<double>(y), *Yr = matY.ptr<double>(y);
+		double *Mr = mags.ptr<double>(y);
+		for (int x = 0; x < matX.cols; ++x) {
+			double gX = Xr[x], gY = Yr[x];
+			double magnitude = sqrt((gX * gX) + (gY * gY));
+			Mr[x] = magnitude;
+		}
+	}
+	return mags;
+}
+
+Mat FaceTools::findPeakPoint(const Mat &src, const Mat &grad, double threshold) {
+	Mat result = src.clone();
+	for (int i = 0; i < grad.rows; i++) {
+		for (int j = 0; j < grad.cols; j++) {
+			if (grad.ptr<double>(i)[j] >= threshold) {
+				cout << grad.ptr<double>(i)[j] << endl;
+				circle(result, Point(j, i), 3, 1234);
+			}
+		}
+	}
+
+	return result;
 }
