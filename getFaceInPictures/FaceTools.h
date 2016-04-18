@@ -132,6 +132,8 @@ public:
 	Mat matrixMagnitude(const Mat &matX, const Mat &matY);
 	//Mark the peak point in a gradient mat
 	Mat findPeakPoint(const Mat &src, const Mat &grad, double threshold);
+	//Mark the peak point in a gradient mat
+	int findFaceInDB(char dbPath[256]);
 };
 
 #endif
