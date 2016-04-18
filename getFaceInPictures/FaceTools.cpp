@@ -332,7 +332,7 @@ Mat FaceTools::maskOnImage(Mat const &src, Mat const &src2) {
 			}
 		}
 	}
-
+	cout << "MarkonImage end" << endl;
 	return dst;
 }
 
@@ -1435,13 +1435,15 @@ Mat FaceTools::getExactNoseGradient(Mat &src, vector<noseInfo> &noseVec, int thr
 	//		}
 	//	}
 	//}
-	Mat gradientX = computeMatGradient(srcClone);
+
+	/*Mat gradientX = computeMatGradient(srcClone);
 	Mat gradientY = computeMatGradient(srcClone.t()).t();
 	Mat out = matrixMagnitude(gradientX, gradientY);
 	Mat peakOut = findPeakPoint(srcClone, out, 8.0);
 	imshow("Nose Before", srcClone);
 	imshow("Nose After", peakOut);
-	waitKey();
+	waitKey();*/
+
 	//imshow("Nose Gradient out", out);
 	//Rect tempNose(Point(10, 10), Point(srcClone.cols - 10, srcClone.rows - 10));
 	//Point nosePoint = findEyeCenter(srcClone, tempNose, "Nose Center");
@@ -1816,4 +1818,122 @@ Mat FaceTools::findPeakPoint(const Mat &src, const Mat &grad, double threshold) 
 	}
 
 	return result;
+}
+
+int FaceTools::findFaceInDB(char dbPath[256]) {
+	// Images variables
+	char imgDir[256];
+	char imgFile[64];
+	char txtFile[64];
+	FILE *ptFile;
+	unsigned int xt1, yt1, xt2, yt2;
+
+	// Label variables
+	char name[64];
+	char prop[64];
+	unsigned int x, y, w, h;
+
+	// Database installation directory
+	strcpy(imgDir, dbPath);
+	cout << imgDir << endl;
+
+	// Create window and display results
+	cvNamedWindow("Source Image", 1);
+
+	//File
+	Mat src;
+	// Apply face detection on database images
+	int numPers, numSer = 1;
+	int i, pan, tilt = 0;
+	int panIndex, tiltIndex;
+	char*  panPlus;
+	char* tiltPlus;
+	for (numPers = 1; numPers <= 15; numPers++) {
+		for (numSer = 1; numSer <= 2; numSer++) {
+			for (i = 0; i < 93; i++) {
+				panPlus = ""; tiltPlus = "";
+
+				// Retrieve pan and tilt angles
+				if (i == 0) {
+					tilt = -90; pan = 0;
+				}
+				else if (i == 92) {
+					tilt = 90; pan = 0;
+				}
+				else {
+					pan = ((i - 1) % 13 - 6) * 15;
+					tilt = ((i - 1) / 13 - 3) * 15;
+					if (abs(tilt) == 45) tilt = tilt / abs(tilt) * 60;
+				}
+
+				// Add "+" before positive angles    
+				if (pan >= 0)  panPlus = "+";
+				if (tilt >= 0) tiltPlus = "+";
+
+				// Build image file path and load image
+				sprintf(imgFile, "%sPerson%02i/person%02i%i%02i%s%i%s%i.jpg",
+					imgDir, numPers, numPers, numSer, i, tiltPlus, tilt, panPlus, pan);
+				printf("Processing %s\n", imgFile);
+				//image = cvLoadImage(imgFile, 1);
+				Mat src = imread(imgFile);
+
+
+
+
+				/********************
+				*   DO                                            *
+				*            YOUR                                 *
+				*                        PROCESS                  *
+				*                                     HERE        *
+				******************/
+				if (!src.empty()){
+					Mat frame = src.clone(), finalresult = src.clone(), faceArea;
+					Mat faceBorder = getSobelBorder(frame);
+
+					cvtColor(frame, grayframe, CV_BGR2GRAY);
+					equalizeHist(grayframe, testframe);
+					Mat thres_lab = this->GetSkin(frame, testframe);
+					Mat testframe2 = this->maskOnImage(thres_lab, frame);
+					Mat testframe3, testframe4, eyeSkin;
+					erode(testframe2, testframe3, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+					dilate(testframe3, testframe4, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+					Mat orginal2 = testframe4.clone();
+					Mat testframe5 = testframe4.clone();
+					for (int i = 0; i < testframe5.rows; i++) {
+						for (int j = 0; j < testframe5.cols; j++) {
+							testframe5.ptr<Vec3b>(i)[j] = Vec3b(100, 100, 100);
+						}
+					}
+					this->processImage(testframe4, testframe5);
+					//imshow("7777", testframe5);
+					this->findFace(testframe5, frame, faceArea);
+					//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
+					this->findMass(testframe5);
+					this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+
+					vector<int> compression_params;
+					compression_params.push_back(CV_IMWRITE_PXM_BINARY);
+					compression_params.push_back(1);
+
+					imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);
+					//imwrite(outputpath + "faceGet_Test.jpg", faceArea, CV_IMWRITE_PXM_BINARY);
+
+					imshow("original", src);
+					//imshow("gray222", grayframe);
+					//imshow("gray", testframe);
+					//imshow("face", orginal2);
+					//imshow("operated", testframe5);
+					//imshow("find", frame);
+					imshow("result", faceArea);
+					waitKey();
+				}
+				else{
+					printf(" No input frame detected.");
+					return 0;
+				}
+			}
+		}
+	}
+
+	return 0;
 }
