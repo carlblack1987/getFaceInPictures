@@ -108,9 +108,9 @@ int main(void)
 		//Mat frame = imread(picFilePath + "Person06\\person06246+0+0.jpg");
 
 		//New Images from 20160418
-		//Mat frame = imread(picFilePath + "20160418160120 01.jpg");
+		Mat frame = imread(picFilePath + "20160418160120 01.jpg");
 		//Right 30 degree
-		Mat frame = imread(picFilePath + "20160418160120 07.jpg");
+		//Mat frame = imread(picFilePath + "20160418160120 07.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);

@@ -20,7 +20,7 @@ const int mouMinSize = 150;
 const int mouthPosRange = 5;
 const int eyesDistance = 70;
 const int eyeSizeLimit = 1000;
-const int binaryThres = 40;
+const int binaryThres = 35;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.40;
 const double eyeHeightRatioLimit = 0.60;
@@ -1302,16 +1302,6 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		cout << "4444" << endl;
 	}
 
-	//cvtColor(srcClone, srcClone, CV_BGR2GRAY);
-	//equalizeHist(srcClone, srcClone);
-
-	/*Mat dst_x, dst_y, dst;
-	Sobel(srcClone, dst_x, srcClone.depth(), 1, 0);
-	Sobel(srcClone, dst_y, srcClone.depth(), 0, 1);
-	imshow("xxx", dst_x);
-	imshow("yyy", dst_y);
-	waitKey();*/
-
 	return srcClone;
 }
 
@@ -1681,12 +1671,24 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	//Get the nose area by using positions of eyes and mouth
 	Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
 	Mat noseAreaRGB = getNoseArea(src, eyeVec, mouVec, noseStart);
+
+	//cvtColor(noseAreaRGB, noseAreaRGB, CV_BGR2GRAY);
+	//equalizeHist(noseAreaRGB, noseAreaRGB);
+	imshow("222", noseAreaRGB);
+	Mat dst_x, dst_y, dst;
+	Sobel(noseAreaRGB, dst_x, noseAreaRGB.depth(), 1, 0);
+	Sobel(noseAreaRGB, dst_y, noseAreaRGB.depth(), 0, 1);
+	imshow("xxx", dst_x);
+	imshow("yyy", dst_y);
+
 	//Get the nose detection result
 	Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
-	imshow("Nose src", src);
+	//imshow("Nose src", src);
 	getExactNoseGradient(noseAreaRGB, noseVec, noseMinSize);
-	//Mat faceBorder = getSobelBorder(noseArea);
-	//imshow("nose area2", noseArea);
+	Mat faceBorder = getSobelBorder(noseAreaRGB);
+	imshow("Face Border", faceBorder);
+	waitKey();
+	imshow("nose area2", noseArea);
 	imshow("Nose", noseResult);
 	
 	//Draw the nose
