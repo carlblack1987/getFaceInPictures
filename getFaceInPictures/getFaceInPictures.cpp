@@ -22,7 +22,8 @@ string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20151125141830\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
-string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
+//string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -62,12 +63,6 @@ int main(void)
 		}
 	}
 	else if (openMode == 2) {
-		// Load the cascade
-		if (!face_cascade.load(face_cascade_name)){
-			printf("--(!)Error loading\n");
-			return (-1);
-		}
-
 		//New border image
 		//Right low ok 0.39
 		//Mat frame = imread(picFilePath + "20160122115308 044.jpg");
@@ -110,7 +105,12 @@ int main(void)
 		//Person06 not ok
 		//Mat frame = imread(picFilePath + "Person06\\person06120-30+0.jpg");
 		//
-		Mat frame = imread(picFilePath + "Person06\\person06246+0+0.jpg");
+		//Mat frame = imread(picFilePath + "Person06\\person06246+0+0.jpg");
+
+		//New Images from 20160418
+		//Mat frame = imread(picFilePath + "20160418160120 01.jpg");
+		//Right 30 degree
+		Mat frame = imread(picFilePath + "20160418160120 07.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);

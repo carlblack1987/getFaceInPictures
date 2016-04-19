@@ -9,7 +9,7 @@ const float noseSearchRowEndRatio = 0.75;
 const float feaSearchColStartRatio = 0.02;
 const float feaSearchColEndRatio = 0.98;
 const int noseMinSize = 20;
-const int noseMaxSize = 200;
+const int noseMaxSize = 300;
 const int nosePosRange = 15;
 const int noseDistance = 30;
 const int noseVectorX = 17;
@@ -17,13 +17,13 @@ const int noseVectorY = 13;
 const int noseAreaRange = 10;
 const int eyeMinSize = 100;
 const int mouMinSize = 150;
-const int mouthPosRange = 20;
+const int mouthPosRange = 5;
 const int eyesDistance = 70;
 const int eyeSizeLimit = 1000;
-const int binaryThres = 50;
+const int binaryThres = 40;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.40;
-const double eyeHeightRatioLimit = 0.40;
+const double eyeHeightRatioLimit = 0.60;
 const int cannyLowThres = 60;
 const int cannyHighThres = 120;
 
@@ -56,12 +56,12 @@ Mat norm_0_255(const Mat& src) {
 
 bool FaceTools::R1(int R, int G, int B) {
 	//Old rule
-	/*bool e1 = (R > 95) && (G > 40) && (B > 20) && ((max(R, max(G, B)) - min(R, min(G, B))) > 15) && (abs(R - G) > 15) && (R > G) && (R > B);
+	bool e1 = (R > 95) && (G > 40) && (B > 20) && ((max(R, max(G, B)) - min(R, min(G, B))) > 15) && (abs(R - G) > 15) && (R > G) && (R > B);
 	bool e2 = (R > 220) && (G > 210) && (B > 170) && (abs(R - G) <= 15) && (R > B) && (G > B);
-	return (e1 || e2);*/
+	return (e1 || e2);
 	//New rule
-	bool e1 = R > G && R > B && G > B;
-	return e1;
+	/*bool e1 = R > G && R > B && G > B;
+	return e1;*/
 }
 
 bool FaceTools::R2(float Y, float Cr, float Cb) {
@@ -1069,6 +1069,7 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 					double eyeWidthRatio = (double)abs(topNode.x - botNode.x) / src.cols;
 					double eyeHeightRatio = (double)abs(topNode.y - botNode.y) / src.rows;
 					rectangle(result, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
+					cout << "Eye size limit: " << eyeSizeLimit << ", real size: " << size << endl;
 					cout << "eyeWidthRatioLimit: " << eyeWidthRatio << " " << eyeHeightRatio << endl;
 					/*imshow("222", result);
 					waitKey();*/
@@ -1248,6 +1249,7 @@ Mat FaceTools::getExactMouth(Mat &src, vector<mouthInfo> &mouVec, int threshold)
 
 				}
 				else {
+					cout << "Abandon mouth object" << endl;
 					//copyObject(orginal2, dst, i, j);
 				}
 			}
