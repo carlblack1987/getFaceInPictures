@@ -129,9 +129,9 @@ public:
 	//Compute the gradient of a mat
 	Mat computeMatGradient(const Mat &mat);
 	//Get the final gradient of the mat
-	Mat matrixMagnitude(const Mat &matX, const Mat &matY);
+	Mat matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag);
 	//Mark the peak point in a gradient mat
-	Mat findPeakPoint(const Mat &src, const Mat &grad, double threshold);
+	Mat findPeakPoint(const Mat &src, const Mat &grad, double threshold, int grayThres, Point &nosePoint);
 	//Mark the peak point in a gradient mat
 	int findFaceInDB(char dbPath[256]);
 };
