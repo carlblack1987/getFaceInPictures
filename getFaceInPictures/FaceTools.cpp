@@ -19,10 +19,10 @@ const int eyeMinSize = 100;
 const int mouMinSize = 150;
 const int mouthPosRange = 5;
 const int eyesDistance = 50;
-const int eyeSizeLimit = 1000;
+const int eyeSizeLimit = 1200;
 const int binaryThres = 50;
 const int eyeBrowDis = 40;
-const double eyeWidthRatioLimit = 0.40;
+const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.60;
 const int cannyLowThres = 60;
 const int cannyHighThres = 120;
@@ -1779,10 +1779,10 @@ Mat FaceTools::computeMatGradient(const cv::Mat &mat) {
 Mat FaceTools::matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag) {
 	cv::Mat mags(matX.rows, matX.cols, CV_64F);
 	maxMag = 0;
-	for (int y = 0; y < matX.rows; ++y) {
+	for (int y = matX.rows * 0.3; y < matX.rows * 0.85; ++y) {
 		const double *Xr = matX.ptr<double>(y), *Yr = matY.ptr<double>(y);
 		double *Mr = mags.ptr<double>(y);
-		for (int x = matX.cols * 0.2; x < matX.cols * 0.9; ++x) {
+		for (int x = 0; x < matX.cols; ++x) {
 			double gX = Xr[x], gY = Yr[x];
 			double magnitude = sqrt((gX * gX) + (gY * gY));
 			Mr[x] = magnitude;
@@ -1800,7 +1800,7 @@ Mat FaceTools::findPeakPoint(const Mat &src, const Mat &grad, double threshold, 
 		for (int j = 0; j < grad.cols; j++) {
 			//if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres){
 			if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres
-				&& i > src.rows * 0.2 && i < src.rows * 0.9){
+				&& i > src.rows * 0.3 && i < src.rows * 0.85){
 				//cout << src.at<uchar>(i, j) - 0 << " " << grad.ptr<double>(i)[j] << endl;
 				centerX += j;
 				centerY += i;

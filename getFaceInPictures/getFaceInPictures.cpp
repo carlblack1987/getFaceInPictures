@@ -115,6 +115,10 @@ int main(void)
 		//Mat frame = imread(picFilePath + "20160418160120 13.jpg");
 		//Right Down 30 degree gradient ok
 		Mat frame = imread(picFilePath + "20160418160120 19.jpg");
+		//Left 15 degree gradient ok
+		//Mat frame = imread(picFilePath + "20160418160120 37.jpg");
+		//Left 30 degree
+		//Mat frame = imread(picFilePath + "20160418160120 39.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);
