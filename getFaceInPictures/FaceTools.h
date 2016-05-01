@@ -134,6 +134,8 @@ public:
 	Mat findPeakPoint(const Mat &src, const Mat &grad, double threshold, int grayThres, Point &nosePoint);
 	//Mark the peak point in a gradient mat
 	int findFaceInDB(char dbPath[256]);
+	//Get the variance of the image
+	float getVariance(const Mat &src, int start, int end);
 };
 
 #endif

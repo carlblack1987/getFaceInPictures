@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-const float eyeSearchRowStartRatio = 0.2;
-const float eyeSearchRowEndRatio = 0.500;
+const float eyeSearchRowStartRatio = 0.005;
+const float eyeSearchRowEndRatio = 0.450;
 const float mouthSearchRowStartRatio = 0.530;
 const float mouthSearchRowEndRatio = 0.909;
 const float noseSearchRowStartRatio = 0.5;
@@ -15,15 +15,17 @@ const int noseDistance = 30;
 const int noseVectorX = 17;
 const int noseVectorY = 13;
 const int noseAreaRange = 10;
+const float noseStartRatio = 0.3;
+const float noseEndRatio = 0.85;
 const int eyeMinSize = 100;
-const int mouMinSize = 150;
+const int mouMinSize = 110;
 const int mouthPosRange = 5;
-const int eyesDistance = 50;
+const int eyesDistance = 40;
 const int eyeSizeLimit = 1200;
-const int binaryThres = 50;
+const int binaryThres = 90;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
-const double eyeHeightRatioLimit = 0.60;
+const double eyeHeightRatioLimit = 0.64;
 const int cannyLowThres = 60;
 const int cannyHighThres = 120;
 
@@ -517,9 +519,10 @@ int FaceTools::processImage(Mat &src, Mat &dst) {
 }
 
 int FaceTools::getObjectSize(Mat &src, int type, int x, int y, int &size, int(&judge)[1000][1000]) {
-	if (x < 0 || x >= src.rows)
+	//cout << "Here pos: " << x << " " << y << endl;
+	if (x < 0 || x >= src.rows - 1)
 		return 0;
-	if (y < 0 || y >= src.cols)
+	if (y < 0 || y >= src.cols - 1)
 		return 0;
 	if (src.ptr<Vec3b>(x)[y] == Vec3b(100, 100, 100) && type == 1) {
 		return 0;
@@ -1075,7 +1078,7 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 					waitKey();*/
 					//if (centerX >= 20 && centerX <= srcClone.cols - 20) {
 					if (size < eyeSizeLimit && eyeWidthRatio < eyeWidthRatioLimit 
-						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10) {
+						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10 && topNode.y > 5) {
 						int size = abs((botNode.x - topNode.x) * (botNode.y - topNode.y));
 						if (eyeVec.size() == 0) {
 							eyeInfo temp;
@@ -1178,6 +1181,7 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 }
 
 Mat FaceTools::getExactMouth(Mat &src, vector<mouthInfo> &mouVec, int threshold) {
+	cout << "Get exact mouth start" << endl;
 	Mat srcClone = src.clone();
 	Mat srcClone2 = src.clone();
 	Mat srcClone3 = src.clone();
@@ -1280,8 +1284,8 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ? 
 			Range(eyeVec[1].pupil.y, mouVec[0].centerNode.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y), 
 			eyeVec[0].pupil.x + noseAreaRange > eyeVec[1].pupil.x ?
-			Range(getBoundValue(src, eyeVec[1].pupil.x - noseAreaRange, 2), eyeVec[0].pupil.x + noseAreaRange) 
-			: Range(getBoundValue(src, eyeVec[0].pupil.x - noseAreaRange, 2), eyeVec[1].pupil.x + noseAreaRange));
+			Range(getBoundValue(src, eyeVec[1].pupil.x - noseAreaRange, 2), getBoundValue(src, eyeVec[0].pupil.x + noseAreaRange, 2))
+			: Range(getBoundValue(src, eyeVec[0].pupil.x - noseAreaRange, 2), getBoundValue(src, eyeVec[1].pupil.x + noseAreaRange, 2)));
 		cout << "2222" << endl;
 	}
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
@@ -1418,7 +1422,7 @@ Mat FaceTools::getExactNoseGradient(Mat &src, vector<noseInfo> &noseVec, int thr
 	Mat gradientX = computeMatGradient(srcClone);
 	Mat gradientY = computeMatGradient(srcClone.t()).t();
 	Mat out = matrixMagnitude(gradientX, gradientY, maxMag);
-	Mat peakOut = findPeakPoint(srcClone, out, maxMag / 2, 60, nosePoint);
+	Mat peakOut = findPeakPoint(srcClone, out, maxMag / 2, 90, nosePoint);
 	imshow("Nose Before", srcClone);
 	imshow("Nose After", peakOut);
 	//waitKey();
@@ -1631,6 +1635,7 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	cout << "Draw facial features start" << endl;
 	vector<noseInfo> noseVec;
 	Point eyeCenter, noseStart;
+	Mat graySrc = src.clone();
 	//Change coordinates of eyes from eye's area to face's area
 	for (int i = 0; i < eyeVec.size(); i++) {
 		eyeVec[i].pupil.x += src.cols * feaSearchColStartRatio;
@@ -1652,7 +1657,7 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	Mat noseArea = getNoseArea(faceBin, eyeVec, mouVec, noseStart);
 	Mat noseAreaRGB = getNoseArea(src, eyeVec, mouVec, noseStart);
 
-	//cvtColor(noseAreaRGB, noseAreaRGB, CV_BGR2GRAY);
+	cvtColor(graySrc, graySrc, CV_BGR2GRAY);
 	////equalizeHist(noseAreaRGB, noseAreaRGB);
 	//imshow("222", noseAreaRGB);
 	//Mat dst_x, dst_y, dst;
@@ -1664,6 +1669,7 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 	//Get the nose detection result
 	//Mat noseResult = getExactNose(noseArea, noseVec, noseMinSize);
 	//imshow("Nose src", src);
+	float variance = getVariance(graySrc, graySrc.rows * noseStartRatio, graySrc.rows * noseEndRatio);
 	getExactNoseGradient(noseAreaRGB, noseVec, noseMinSize);
 	//Mat faceBorder = getSobelBorder(noseAreaRGB);
 	//imshow("Face Border", faceBorder);
@@ -1745,14 +1751,14 @@ void FaceTools::drawFacialFeatures(Mat &src, Mat &faceBin, vector<eyeInfo> &eyeV
 
 int FaceTools::getBoundValue(Mat src, int range, int type) {
 	if (type == 1) {
-		if (range >= src.rows)
-			return src.rows;
+		if (range >= src.rows - 1)
+			return src.rows - 1;
 		else if (range <= 0)
 			return 0;
 	}
 	else if (type == 2) {
-		if (range >= src.cols)
-			return src.cols;
+		if (range >= src.cols - 1)
+			return src.cols - 1;
 		else if (range <= 0)
 			return 0;
 	}
@@ -1779,7 +1785,7 @@ Mat FaceTools::computeMatGradient(const cv::Mat &mat) {
 Mat FaceTools::matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag) {
 	cv::Mat mags(matX.rows, matX.cols, CV_64F);
 	maxMag = 0;
-	for (int y = matX.rows * 0.3; y < matX.rows * 0.85; ++y) {
+	for (int y = matX.rows * noseStartRatio; y < matX.rows * noseEndRatio; ++y) {
 		const double *Xr = matX.ptr<double>(y), *Yr = matY.ptr<double>(y);
 		double *Mr = mags.ptr<double>(y);
 		for (int x = 0; x < matX.cols; ++x) {
@@ -1800,7 +1806,7 @@ Mat FaceTools::findPeakPoint(const Mat &src, const Mat &grad, double threshold, 
 		for (int j = 0; j < grad.cols; j++) {
 			//if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres){
 			if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres
-				&& i > src.rows * 0.3 && i < src.rows * 0.85){
+				&& i > src.rows * noseStartRatio && i < src.rows * noseEndRatio){
 				//cout << src.at<uchar>(i, j) - 0 << " " << grad.ptr<double>(i)[j] << endl;
 				centerX += j;
 				centerY += i;
@@ -1933,4 +1939,26 @@ int FaceTools::findFaceInDB(char dbPath[256]) {
 	}
 
 	return 0;
+}
+
+float FaceTools::getVariance(const Mat &src, int start, int end) {
+	float result = 0, expectation = 0;
+	int total = abs(end - start) * src.cols;
+	for (int i = start; i < end; i++) {
+		for (int j = 0; j < src.cols; j++) {
+			expectation += (float)(src.at<uchar>(i, j) - 0) / total;
+		}
+	}
+
+	cout << "Expectation: " << expectation << endl;
+	for (int i = start; i < end; i++) {
+		for (int j = 0; j < src.cols; j++) {
+			result += (float)(src.at<uchar>(i, j) - 0 - expectation) *
+				(src.at<uchar>(i, j) - 0 - expectation) / total;
+		}
+	}
+
+	result = sqrt(result);
+	cout << "Variance: " << result << endl;
+	return result;
 }
