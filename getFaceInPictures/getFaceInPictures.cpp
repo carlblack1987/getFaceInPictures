@@ -22,8 +22,8 @@ string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20151125141830\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
-//string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
+string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -98,14 +98,51 @@ int main(void)
 		//left 006
 		//Mat frame = imread(picFilePath + "20160220122305 50.jpg");
 
-		//Atsushi Sann no pictures
-		//Mat frame = imread(picFilePath + "20160301133624 14.jpg");
+		//Atsushi Sann's pictures
+		//Right in front
+		//Mat frame = imread(picFilePath + "20160301133624 13.jpg");
 
 		//Using face Database's pictures
 		//Person06 not ok
 		//Mat frame = imread(picFilePath + "Person06\\person06120-30+0.jpg");
 		//
 		//Mat frame = imread(picFilePath + "Person06\\person06246+0+0.jpg");
+		//Person 03 binaryThres = 70 ok
+		//Mat frame = imread(picFilePath + "Person03\\person03146+0+0.jpg");
+		//Person 03 Right 30 degree Right eye not ok
+		//Mat frame = imread(picFilePath + "Person03\\person03144+0-30.jpg");
+		//Person 03 Right Up 30 degree
+		//Mat frame = imread(picFilePath + "Person03\\person03270+30-30.jpg");
+		//Person 03 Right Down 30 degree not ok
+		//Mat frame = imread(picFilePath + "Person03\\person03218-30-30.jpg");
+		//Person 03 Left Up 30 degree left eye not ok
+		//Mat frame = imread(picFilePath + "Person03\\person03274+30+30.jpg");
+		//Person 03 Left Down 30 degree left eye not ok
+		//Mat frame = imread(picFilePath + "Person03\\person03222-30+30.jpg");
+		//Person 10 binaryThres = 60 ok
+		//Mat frame = imread(picFilePath + "Person10\\person10146+0+0.jpg");
+		//Person 10 Right 30 degree ok
+		//Mat frame = imread(picFilePath + "Person10\\person10131-15-30.jpg");
+		//Person 10 Right Up 30 degree mouth not ok
+		//Mat frame = imread(picFilePath + "Person10\\person10170+30-30.jpg");
+		//Person 10 Right Down 30 degree ok
+		//Mat frame = imread(picFilePath + "Person10\\person10118-30-30.jpg");
+		//Person 10 Left Up 30 degree left eye not ok
+		//Mat frame = imread(picFilePath + "Person10\\person10161+15+30.jpg");
+		//Person 10 Left Down 30 degree left eye not ok
+		//Mat frame = imread(picFilePath + "Person10\\person10122-30+30.jpg");
+		//Person 14 binaryThres = 60 ok
+		//Mat frame = imread(picFilePath + "Person14\\person14146+0+0.jpg");
+		//Person 14 Right 30 degree ok
+		//Mat frame = imread(picFilePath + "Person14\\person14131-15-30.jpg");
+		//Person 14 Right Up 30 degree mouth not ok
+		//Mat frame = imread(picFilePath + "Person14\\person14170+30-30.jpg");
+		//Person 14 Right Down 30 degree ok
+		//Mat frame = imread(picFilePath + "Person14\\person10118-30-30.jpg");
+		//Person 14 Left Up 30 degree binary = 80 ok
+		//Mat frame = imread(picFilePath + "Person14\\person14174+30+30.jpg");
+		//Person 14 Left Down 30 degree binary = 90 mouth not ok
+		Mat frame = imread(picFilePath + "Person14\\person14122-30+30.jpg");
 
 		//New Images from 20160418
 		//Mat frame = imread(picFilePath + "20160418160120 01.jpg");
@@ -114,11 +151,13 @@ int main(void)
 		//Right Up 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 13.jpg");
 		//Right Down 30 degree gradient ok
-		Mat frame = imread(picFilePath + "20160418160120 19.jpg");
+		//Mat frame = imread(picFilePath + "20160418160120 19.jpg");
 		//Left 15 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 37.jpg");
-		//Left 30 degree
+		//Left 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 39.jpg");
+		//Left Down 30 degree
+		//Mat frame = imread(picFilePath + "20160418160120 46.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);
