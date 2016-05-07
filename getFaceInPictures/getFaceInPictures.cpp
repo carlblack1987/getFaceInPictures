@@ -22,8 +22,8 @@ string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20151125141830\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160122115308\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
-string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
+//string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -142,10 +142,10 @@ int main(void)
 		//Person 14 Left Up 30 degree binary = 80 ok
 		//Mat frame = imread(picFilePath + "Person14\\person14174+30+30.jpg");
 		//Person 14 Left Down 30 degree binary = 90 mouth not ok
-		Mat frame = imread(picFilePath + "Person14\\person14122-30+30.jpg");
+		//Mat frame = imread(picFilePath + "Person14\\person14122-30+30.jpg");
 
 		//New Images from 20160418
-		//Mat frame = imread(picFilePath + "20160418160120 01.jpg");
+		Mat frame = imread(picFilePath + "20160418160120 01.jpg");
 		//Right 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 07.jpg");
 		//Right Up 30 degree gradient ok
