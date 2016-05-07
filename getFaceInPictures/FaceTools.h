@@ -129,13 +129,21 @@ public:
 	//Compute the gradient of a mat
 	Mat computeMatGradient(const Mat &mat);
 	//Get the final gradient of the mat
-	Mat matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag);
+	Mat matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag, int type);
 	//Mark the peak point in a gradient mat
 	Mat findPeakPoint(const Mat &src, const Mat &grad, double threshold, int grayThres, Point &nosePoint);
+	//Mark the peak point in a gradient mat for eyes
+	Mat findPeakPointEyes(const Mat &src, const Mat &grad, double threshold, int grayThres, Point &nosePoint);
 	//Mark the peak point in a gradient mat
 	int findFaceInDB(char dbPath[256]);
 	//Get the variance of the image
 	float getVariance(const Mat &src, int start, int end);
+	//Get circles in the image by using Hough
+	Mat getHoughCircles(const Mat &src, int minRadius = 0, int maxRadius = 0);
+	//Get contours in the image by using findContours
+	Mat getContoursByCplus(const Mat &src, int mode = 0, double minarea = 0, double whRatio = 1);
+	//Detect the eyes using gray level
+	Mat getExactEyesGray(Mat &src, int threshold);
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-const float eyeSearchRowStartRatio = 0.005;
-const float eyeSearchRowEndRatio = 0.450;
+const float eyeSearchRowStartRatio = 0.000;
+const float eyeSearchRowEndRatio = 0.500;
 const float mouthSearchRowStartRatio = 0.530;
 const float mouthSearchRowEndRatio = 0.909;
 const float noseSearchRowStartRatio = 0.5;
@@ -22,10 +22,12 @@ const int mouMinSize = 110;
 const int mouthPosRange = 5;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1200;
-const int binaryThres = 90;
+const int binaryThres = 50;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
+const float eyeStartRatio = 0.3;
+const float eyeEndRatio = 0.95;
 const int cannyLowThres = 60;
 const int cannyHighThres = 120;
 
@@ -802,31 +804,14 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 	if (!src.empty()){
 		Mat frame = src.clone();
-		Mat grayFrame = src.clone();
-		cvtColor(grayFrame, grayFrame, CV_BGR2GRAY);
-		//GaussianBlur(grayFrame, grayFrame, Size(9, 9), 2, 2);
-		//Use Canny operator to do border detection
-		Canny(grayFrame, grayFrame, cannyLowThres, cannyHighThres, 3);
-
-		vector<Vec3f> circles;
-		HoughCircles(grayFrame, circles, CV_HOUGH_GRADIENT, 1.5, 10, 50, 25, 1, 10);
-
-		//Draw Circle
-		cout << "circle size : " << circles.size() << endl;
-		imshow("Gray Face Formal", grayFrame);
-		for (size_t i = 0; i < circles.size(); i++)
-		{
-			Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-			int radius = cvRound(circles[i][2]);
-			//Draw center of circle
-			circle(grayFrame, center, 3, Scalar(0, 255, 0), -1, 8, 0);
-			//Draw outline of circle
-			circle(grayFrame, center, radius, Scalar(155, 50, 255), 3, 8, 0);
-		}
-		imshow("Gray Face", grayFrame);
+		//Try to find eyes through finding circles in the image by Hough.
+		getHoughCircles(frame, 1, 10);
+		//Try to find contours of eyes and nose by findContours
+		getContoursByCplus(frame, 0);
 
 		Mat faceBin = getBinaryFormat(frame, binaryThres);
 		imshow("bin", faceBin);
+		cvtColor(frame, frame, CV_RGB2GRAY);
 
 		//Generate a new mat only contains eye area
 		Mat eyeAreaOri = faceBin(Range(frame.rows * eyeSearchRowStartRatio, frame.rows * eyeSearchRowEndRatio), 
@@ -834,10 +819,13 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		//Generate a new mat only contains mouth area
 		Mat mouthAreaOri = faceBin(Range(frame.rows * mouthSearchRowStartRatio, frame.rows * mouthSearchRowEndRatio), 
 			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
+		//Generate a new mat only contains mouth area
+		Mat eyeAreaGray = frame(Range(frame.rows * eyeSearchRowStartRatio, frame.rows * eyeSearchRowEndRatio),
+			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
 
 		Mat eyeResult = getExactEyes(eyeAreaOri, eyeVec, eyeMinSize);
 		Mat mouthResult = getExactMouth(mouthAreaOri, mouVec, mouMinSize);
-		//Mat noseResult = getExactNose(noseAreaOri, noseVec, noseMinSize);
+		Mat eyeResultGray = getExactEyesGray(eyeAreaGray, eyeMinSize);
 		imshow("eyes", eyeResult);
 		imshow("Mouth", mouthResult);
 		//imshow("Nose", noseResult);
@@ -1421,7 +1409,7 @@ Mat FaceTools::getExactNoseGradient(Mat &src, vector<noseInfo> &noseVec, int thr
 	double maxMag;
 	Mat gradientX = computeMatGradient(srcClone);
 	Mat gradientY = computeMatGradient(srcClone.t()).t();
-	Mat out = matrixMagnitude(gradientX, gradientY, maxMag);
+	Mat out = matrixMagnitude(gradientX, gradientY, maxMag, 2);
 	Mat peakOut = findPeakPoint(srcClone, out, maxMag / 2, 90, nosePoint);
 	imshow("Nose Before", srcClone);
 	imshow("Nose After", peakOut);
@@ -1782,10 +1770,19 @@ Mat FaceTools::computeMatGradient(const cv::Mat &mat) {
 	return out;
 }
 
-Mat FaceTools::matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag) {
+Mat FaceTools::matrixMagnitude(const Mat &matX, const Mat &matY, double &maxMag, int type) {
 	cv::Mat mags(matX.rows, matX.cols, CV_64F);
 	maxMag = 0;
-	for (int y = matX.rows * noseStartRatio; y < matX.rows * noseEndRatio; ++y) {
+	double startRatio, endRatio;
+	if (type == 1) {
+		startRatio = eyeStartRatio;
+		endRatio = eyeEndRatio;
+	}
+	else if (type == 2) {
+		startRatio = noseStartRatio;
+		endRatio = noseEndRatio;
+	}
+	for (int y = matX.rows * startRatio; y < matX.rows * endRatio; ++y) {
 		const double *Xr = matX.ptr<double>(y), *Yr = matY.ptr<double>(y);
 		double *Mr = mags.ptr<double>(y);
 		for (int x = 0; x < matX.cols; ++x) {
@@ -1807,6 +1804,30 @@ Mat FaceTools::findPeakPoint(const Mat &src, const Mat &grad, double threshold, 
 			//if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres){
 			if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres
 				&& i > src.rows * noseStartRatio && i < src.rows * noseEndRatio){
+				//cout << src.at<uchar>(i, j) - 0 << " " << grad.ptr<double>(i)[j] << endl;
+				centerX += j;
+				centerY += i;
+				count++;
+				circle(result, Point(j, i), 3, 1234);
+			}
+		}
+	}
+
+	cout << "Nose Pixel Num: " << count << endl;
+	nosePoint.x = count > 0 ? centerX / count : src.cols / 2;
+	nosePoint.y = count > 0 ? centerY / count : src.rows / 2;
+	//circle(result, nosePoint, 3, 1234);
+	return result;
+}
+
+Mat FaceTools::findPeakPointEyes(const Mat &src, const Mat &grad, double threshold, int grayThres, Point &nosePoint) {
+	Mat result = src.clone();
+	int count = 0, centerX = 0, centerY = 0;
+	for (int i = 0; i < grad.rows; i++) {
+		for (int j = 0; j < grad.cols; j++) {
+			//if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres){
+			if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres
+				&& i > src.rows * eyeStartRatio && i < src.rows * eyeEndRatio){
 				//cout << src.at<uchar>(i, j) - 0 << " " << grad.ptr<double>(i)[j] << endl;
 				centerX += j;
 				centerY += i;
@@ -1960,5 +1981,201 @@ float FaceTools::getVariance(const Mat &src, int start, int end) {
 
 	result = sqrt(result);
 	cout << "Variance: " << result << endl;
+	return result;
+}
+
+Mat FaceTools::getHoughCircles(const Mat &src, int minRadius, int maxRadius) {
+	Mat grayFrame = src.clone();
+	cvtColor(grayFrame, grayFrame, CV_BGR2GRAY);
+	//GaussianBlur(grayFrame, grayFrame, Size(9, 9), 2, 2);
+	//Use Canny operator to do border detection
+	Canny(grayFrame, grayFrame, cannyLowThres, cannyHighThres, 3);
+
+	vector<Vec3f> circles;
+	HoughCircles(grayFrame, circles, CV_HOUGH_GRADIENT, 1.5, 10, 50, 25, minRadius, maxRadius);
+
+	//Draw Circle
+	cout << "circle size : " << circles.size() << endl;
+	imshow("Gray Face Formal", grayFrame);
+	for (size_t i = 0; i < circles.size(); i++)
+	{
+		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		int radius = cvRound(circles[i][2]);
+		//Draw center of circle
+		circle(grayFrame, center, 3, Scalar(0, 255, 0), -1, 8, 0);
+		//Draw outline of circle
+		circle(grayFrame, center, radius, Scalar(155, 50, 255), 3, 8, 0);
+	}
+	imshow("Gray Face", grayFrame);
+
+	return grayFrame;
+}
+
+Mat FaceTools::getContoursByCplus(const Mat &src, int mode, double minarea, double whRatio) {
+	Mat srcClone = src.clone(), dst, canny_output;
+	if (!srcClone.data)
+	{
+		std::cout << "read data error!" << std::endl;
+		return dst;
+	}
+	blur(srcClone, srcClone, Size(3, 3));
+
+
+	//the pram. for findContours,  
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+
+	// Detect edges using canny
+	//Canny(srcClone, canny_output, 80, 255, 3);
+	Canny(srcClone, canny_output, cannyLowThres, cannyHighThres, 3);
+	//imshow("canny", canny_output);
+	// Find contours
+	if (mode == 2) {
+		//findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+		findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+		//CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE  
+
+		double maxarea = 0;
+		int maxAreaIdx = 0;
+
+		for (int i = 0; i < contours.size(); i++)
+		{
+
+			double tmparea = fabs(contourArea(contours[i]));
+			if (tmparea > maxarea)
+			{
+				maxarea = tmparea;
+				maxAreaIdx = i;
+				continue;
+			}
+
+			if (tmparea < minarea)
+			{
+				//Delete those area whose size smaller than minarea
+				contours.erase(contours.begin() + i);
+				std::wcout << "delete a small area" << std::endl;
+				continue;
+			}
+			//Calculate the contour's width, height
+			Rect aRect = boundingRect(contours[i]);
+			if ((aRect.width / aRect.height) < whRatio)
+			{
+				//Delete those contour whose ratio of width and height is smaller than specified value
+				contours.erase(contours.begin() + i);
+				std::wcout << "delete a unnomalRatio area" << std::endl;
+				continue;
+			}
+		}
+		// Draw contours
+		dst = Mat::zeros(canny_output.size(), CV_8UC3);
+		RNG rng;
+		for (int i = 0; i < contours.size(); i++)
+		{
+			//Random Color
+			Scalar color = Scalar(rng.uniform(0, 0), rng.uniform(255, 255), rng.uniform(0, 0));
+			drawContours(dst, contours, i, color, 1, 8, hierarchy, 0, Point());
+		}
+		// Create Window  
+		char* source_window = "countors";
+		namedWindow(source_window, CV_WINDOW_NORMAL);
+		imshow(source_window, dst);
+		waitKey(0);
+
+		return dst;
+	}
+	else if (mode == 0) {
+		//findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+		findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, Point(0, 0));
+
+		string inputFile = "E:\\faceTemplate\\HeadPoseImageDatabase\\Person14\\person14170+30-30.jpg"; // Create Memory 
+		CvMemStorage *storage = cvCreateMemStorage(0);; //Load image from disk 
+		IplImage *img = cvLoadImage(inputFile.c_str(), 0);
+		CvSeq *seq = 0;
+
+		cvFindContours(img, storage, &seq, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_CODE, cvPoint(0, 0));
+		seq = cvApproxChains(seq, storage, CV_CHAIN_APPROX_SIMPLE, 0, 0, 0);
+		//CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE  
+
+		double maxarea = 0;
+		int maxAreaIdx = 0;
+		for (int i = 0; i < contours.size(); i++)
+		{
+
+			double tmparea = fabs(contourArea(contours[i]));
+			if (tmparea > maxarea)
+			{
+				maxarea = tmparea;
+				maxAreaIdx = i;
+				continue;
+			}
+
+			if (tmparea < minarea)
+			{
+				//Delete those area whose size smaller than minarea
+				contours.erase(contours.begin() + i);
+				std::wcout << "delete a small area" << std::endl;
+				continue;
+			}
+			//Calculate the contour's width, height
+			Rect aRect = boundingRect(contours[i]);
+			if ((aRect.width / aRect.height) < whRatio)
+			{
+				//Delete those contour whose ratio of width and height is smaller than specified value
+				contours.erase(contours.begin() + i);
+				std::wcout << "delete a unnomalRatio area" << std::endl;
+				continue;
+			}
+		}
+		// Draw contours
+		dst = Mat::zeros(canny_output.size(), CV_8UC3);
+		RNG rng;
+		for (int i = 0; i < contours.size(); i++)
+		{
+			//Random Color
+			Scalar color = Scalar(rng.uniform(0, 0), rng.uniform(255, 255), rng.uniform(0, 0));
+			drawContours(dst, contours, i, color, 1, 8, hierarchy, 0, Point());
+		}
+		// Create Window  
+		char* source_window = "countors";
+		namedWindow(source_window, CV_WINDOW_NORMAL);
+		imshow(source_window, dst);
+		//waitKey(0);
+
+		return dst;
+	}
+}
+
+Mat FaceTools::getExactEyesGray(Mat &src, int threshold) {
+	Mat srcClone = src.clone();
+
+	//int count = 0, centerX = 0, centerY = 0;
+	//for (int i = 0; i < grad.rows; i++) {
+	//	for (int j = 0; j < grad.cols; j++) {
+	//		//if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres){
+	//		if (grad.ptr<double>(i)[j] >= threshold && src.at<uchar>(i, j) - 0 <= grayThres
+	//			&& i > src.rows * noseStartRatio && i < src.rows * noseEndRatio){
+	//			//cout << src.at<uchar>(i, j) - 0 << " " << grad.ptr<double>(i)[j] << endl;
+	//			centerX += j;
+	//			centerY += i;
+	//			count++;
+	//			circle(result, Point(j, i), 3, 1234);
+	//		}
+	//	}
+	//}
+
+	//cout << "Nose Pixel Num: " << count << endl;
+	//nosePoint.x = count > 0 ? centerX / count : src.cols / 2;
+	//nosePoint.y = count > 0 ? centerY / count : src.rows / 2;
+	////circle(result, nosePoint, 3, 1234);
+	//imshow("Eye gray", result);
+
+	double maxMag;
+	Point nosePoint;
+	Mat gradientX = computeMatGradient(srcClone);
+	Mat gradientY = computeMatGradient(srcClone.t()).t();
+	Mat out = matrixMagnitude(gradientX, gradientY, maxMag, 1);
+	Mat result = findPeakPointEyes(srcClone, out, maxMag / 4, 100, nosePoint);
+	imshow("Eye gray", result);
+
 	return result;
 }
