@@ -45,6 +45,7 @@ int main(void)
 
 	if (openMode == 1) {
 		VideoCapture cap(0);
+		Mat pre;
 		cap.open(0);
 
 		while (1)
@@ -56,7 +57,9 @@ int main(void)
 				printf("an error while taking the frame from cap");
 			}
 			else {
-				facetool.detectFaceSkinInVideo(frame);
+				//facetool.detectFaceSkinInVideo(frame);
+				//Added 20160517, use calcOpticalFlowPyrLK to get the graphic change per frame.
+				pre = facetool.detectFaceCornerInVideo(frame, pre);
 				if (cvWaitKey(33) == 27)
 					return 0;
 			}

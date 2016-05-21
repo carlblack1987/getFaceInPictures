@@ -74,6 +74,8 @@ public:
 	int detectFaceSkin(Mat &src);
 	//Detect face by skin from live video
 	int detectFaceSkinInVideo(Mat &src);
+	//Detect face by skin and detect corner points from live video
+	Mat detectFaceCornerInVideo(Mat &src, Mat &pre);
 	//Erase extra object in the image
 	int processImage(Mat &src, Mat &dst);
 	//Erase extra object in the image
@@ -87,7 +89,7 @@ public:
 	//Scan the object
 	int scanObject(Mat &src, int type, int x, int y, Point &p1);
 	//Find face with object
-	int findFace(Mat &src, Mat &dst, Mat &result);
+	Point findFace(Mat &src, Mat &dst, Mat &result);
 	//Find the mass center of the face, src is the result of skin detection
 	int findMass(Mat &src);
 	//Find face with object, this is a bak version
@@ -144,6 +146,8 @@ public:
 	Mat getContoursByCplus(const Mat &src, int mode = 0, double minarea = 0, double whRatio = 1);
 	//Detect the eyes using gray level
 	Mat getExactEyesGray(Mat &src, int threshold);
+	//Detect corner points of the face
+	Mat detectCornerPoints(Mat &src, Mat &dst, Point startP);
 };
 
 #endif

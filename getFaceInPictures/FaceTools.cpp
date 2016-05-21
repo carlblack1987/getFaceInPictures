@@ -493,6 +493,78 @@ int FaceTools::detectFaceSkinInVideo(Mat &src) {
 	}
 }
 
+Mat FaceTools::detectFaceCornerInVideo(Mat &src, Mat &pre) {
+	Mat srcClone = src.clone(), next;
+
+	/*
+	//This part uses calcOpticalFlowPyrLK to get change by frame in the video.
+	vector<Point2f> prepoint, nextpoint;
+	vector<uchar> state;
+	vector<float>err;
+	if (src.empty())
+		return srcClone;
+
+	cvtColor(srcClone, next, CV_BGR2GRAY);
+
+	if (!next.empty() && !pre.empty())
+	{
+
+		goodFeaturesToTrack(pre, prepoint, 500, 0.001, 10, Mat(), 3, false, 0.04);
+		cornerSubPix(pre, prepoint, Size(10, 10), Size(-1, -1), TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+		calcOpticalFlowPyrLK(pre, next, prepoint, nextpoint, state, err, Size(31, 31), 3);
+		for (int i = 0; i<state.size(); i++)
+		{
+			if (state[i] != 0)
+			{
+				line(frame, Point((int)prepoint[i].x, (int)prepoint[i].y), Point((int)nextpoint[i].x, (int)nextpoint[i].y), Scalar::all(-1));
+			}
+		}
+		namedWindow("frame", 0);
+		imshow("frame", frame);
+		waitKey(1);
+	}*/
+
+	if (!src.empty()){
+		Mat frame = src.clone(), finalresult = src.clone(), faceArea;
+		Mat faceBorder = getSobelBorder(frame);
+
+		cvtColor(frame, grayframe, CV_BGR2GRAY);
+		equalizeHist(grayframe, testframe);
+		Mat thres_lab = this->GetSkin(frame, testframe);
+		Mat testframe2 = this->maskOnImage(thres_lab, frame);
+		Mat testframe3, testframe4, eyeSkin;
+		erode(testframe2, testframe3, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+		dilate(testframe3, testframe4, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+		Mat orginal2 = testframe4.clone();
+		Mat testframe5 = testframe4.clone();
+		for (int i = 0; i < testframe5.rows; i++) {
+			for (int j = 0; j < testframe5.cols; j++) {
+				testframe5.ptr<Vec3b>(i)[j] = Vec3b(100, 100, 100);
+			}
+		}
+		this->processImage(testframe4, testframe5);
+		Point startP = this->findFace(testframe5, frame, faceArea);
+		this->findMass(testframe5);
+		//this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+		detectCornerPoints(faceArea, frame, startP);
+
+		imshow("original", src);
+		//imshow("gray222", grayframe);
+		imshow("gray", testframe);
+		imshow("face", orginal2);
+		imshow("operated", testframe5);
+		imshow("find", frame);
+		imshow("result", faceArea);
+		//imshow("Eys Skin", eyeSkin);
+		//imshow("Face Border", faceBorder);
+	}
+	else{
+		printf(" No input frame detected.");
+	}
+
+	return next;
+}
+
 int FaceTools::processImage(Mat &src, Mat &dst) {
 	int size = 0;
 	int judgeM[1000][1000];
@@ -617,11 +689,11 @@ int FaceTools::eraseObject(Mat &src, int x, int y, int deep) {
 	return 1;
 }
 
-int FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
+Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 	int minDis = 99999, maxDis = 0, currentDis;
 	int minX = 9999, minY = 9999, maxX = 0 , maxY = 0;
 	if (src.rows <= 0 || dst.rows <= 0)
-		return 0;
+		return Point(0, 0);
 	for (int i = 0; i < src.rows; i++) {
 		for (int j = 0; j < src.cols; j++) {
 			if (src.ptr<Vec3b>(i)[j] == Vec3b(100, 100, 100)){
@@ -642,7 +714,7 @@ int FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 	result = dst(Range(minY, maxY), Range(minX, maxX));
 	src = src(Range(minY, maxY), Range(minX, maxX));
 
-	return 1;
+	return Point(minX, minY);
 }
 
 int FaceTools::findFacialFeatures_20160128(Mat &src, Mat &dst, Mat &result) {
@@ -802,15 +874,21 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 	imshow("RGB Face", src);
 
+	detectCornerPoints(src, src.clone(), Point(0, 0));
+
 	if (!src.empty()){
 		Mat frame = src.clone();
+
+		Mat faceBin = getBinaryFormat(frame, binaryThres);
+		imshow("bin", faceBin);
+
+		//Added 20160518
 		//Try to find eyes through finding circles in the image by Hough.
 		getHoughCircles(frame, 1, 10);
 		//Try to find contours of eyes and nose by findContours
 		getContoursByCplus(frame, 0);
+		//Ended 20160518
 
-		Mat faceBin = getBinaryFormat(frame, binaryThres);
-		imshow("bin", faceBin);
 		cvtColor(frame, frame, CV_RGB2GRAY);
 
 		//Generate a new mat only contains eye area
@@ -2084,61 +2162,64 @@ Mat FaceTools::getContoursByCplus(const Mat &src, int mode, double minarea, doub
 		return dst;
 	}
 	else if (mode == 0) {
-		//findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-		findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, Point(0, 0));
-
-		string inputFile = "E:\\faceTemplate\\HeadPoseImageDatabase\\Person14\\person14170+30-30.jpg"; // Create Memory 
+		//string inputFile = "E:\\faceTemplate\\HeadPoseImageDatabase\\Person14\\person14170+30-30.jpg"; // Create Memory 
 		CvMemStorage *storage = cvCreateMemStorage(0);; //Load image from disk 
-		IplImage *img = cvLoadImage(inputFile.c_str(), 0);
+		//IplImage *img = cvLoadImage(inputFile.c_str(), 0);
 		CvSeq *seq = 0;
+		CvSeq *pConInner = NULL;
+		double dConArea;
 
-		cvFindContours(img, storage, &seq, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_CODE, cvPoint(0, 0));
+		IplImage *tmp = &IplImage(canny_output);
+		//Create contour chains
+		cvFindContours(tmp, storage, &seq, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_CODE, cvPoint(0, 0));
+		//Create approximated Freeman chains
 		seq = cvApproxChains(seq, storage, CV_CHAIN_APPROX_SIMPLE, 0, 0, 0);
-		//CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE  
 
-		double maxarea = 0;
-		int maxAreaIdx = 0;
-		for (int i = 0; i < contours.size(); i++)
+		cvDrawContours(tmp, seq, CV_RGB(255, 255, 255), CV_RGB(255, 255, 255), 2, CV_FILLED, 8, cvPoint(0, 0));
+		int wai = 0;
+		int nei = 0;
+		//Outer contours
+		for (; seq != NULL; seq = seq->h_next)
 		{
-
-			double tmparea = fabs(contourArea(contours[i]));
-			if (tmparea > maxarea)
+			wai++;
+			//Inner contours
+			/*for (pConInner = seq->v_next; seq != NULL; seq = seq->h_next)
 			{
-				maxarea = tmparea;
-				maxAreaIdx = i;
-				continue;
-			}
-
-			if (tmparea < minarea)
-			{
-				//Delete those area whose size smaller than minarea
-				contours.erase(contours.begin() + i);
-				std::wcout << "delete a small area" << std::endl;
-				continue;
-			}
-			//Calculate the contour's width, height
-			Rect aRect = boundingRect(contours[i]);
-			if ((aRect.width / aRect.height) < whRatio)
-			{
-				//Delete those contour whose ratio of width and height is smaller than specified value
-				contours.erase(contours.begin() + i);
-				std::wcout << "delete a unnomalRatio area" << std::endl;
-				continue;
-			}
+				nei++;
+				dConArea = fabs(cvContourArea(pConInner, CV_WHOLE_SEQ));
+				printf("%f\n", dConArea);
+			}*/
+			CvRect rect = cvBoundingRect(seq, 0);
+			//cvRectangle(tmp, cvPoint(rect.x, rect.y), cvPoint(rect.x + rect.width, rect.y + rect.height), CV_RGB(255, 255, 255), 1, 8, 0);
 		}
-		// Draw contours
-		dst = Mat::zeros(canny_output.size(), CV_8UC3);
-		RNG rng;
-		for (int i = 0; i < contours.size(); i++)
+
+		cout << "wai: " << wai << endl;
+
+		Mat tempMat(tmp, 0);
+
+		vector<Vec3f> circles;
+		HoughCircles(tempMat, circles, CV_HOUGH_GRADIENT, 1.5, 10, 50, 25, 1, 10);
+
+		//Draw Circle
+		cout << "circle size : " << circles.size() << endl;
+		for (size_t i = 0; i < circles.size(); i++)
 		{
-			//Random Color
-			Scalar color = Scalar(rng.uniform(0, 0), rng.uniform(255, 255), rng.uniform(0, 0));
-			drawContours(dst, contours, i, color, 1, 8, hierarchy, 0, Point());
+			Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+			int radius = cvRound(circles[i][2]);
+			//Draw center of circle
+			circle(tempMat, center, 3, Scalar(0, 255, 0), -1, 8, 0);
+			//Draw outline of circle
+			circle(tempMat, center, radius, Scalar(155, 50, 255), 3, 8, 0);
 		}
+
+		imshow("Contours222", tempMat);
+		cvReleaseMemStorage(&storage);
+		storage = NULL;
+		
 		// Create Window  
-		char* source_window = "countors";
+		/*char* source_window = "countors";
 		namedWindow(source_window, CV_WINDOW_NORMAL);
-		imshow(source_window, dst);
+		imshow(source_window, dst);*/
 		//waitKey(0);
 
 		return dst;
@@ -2178,4 +2259,70 @@ Mat FaceTools::getExactEyesGray(Mat &src, int threshold) {
 	imshow("Eye gray", result);
 
 	return result;
+}
+
+Mat FaceTools::detectCornerPoints(Mat &src, Mat &dst, Point startP) {
+	Mat srcClone = src.clone();
+
+	//Added 20150517 start
+	vector<Point2f> corners;
+	double qualityLevel = 0.01;
+	double minDistance = 15;
+	int blockSize = 3;
+	int maxCorners = 50;
+	int maxCornersThresh = 100;
+	bool useHarrisDetector = false;
+	double k = 0.04;
+
+	Mat detectSrcCopy = src.clone();
+	Mat refineSrcCopy = src.clone();
+	Mat srcGray;
+	char* detectWindow = "detection";
+	char* refineWindow = "refinement";
+	cvtColor(srcClone, srcGray, CV_RGB2GRAY);
+
+	goodFeaturesToTrack(srcGray,
+		corners,
+		maxCorners,
+		qualityLevel,
+		minDistance,
+		Mat(),
+		blockSize,
+		useHarrisDetector,
+		k);
+
+	cout << "*  detected corners : " << corners.size() << endl;
+	cout << "** max corners: " << maxCorners << endl;
+
+	int r = 3;
+	cout << "-- Before refinement: " << endl;
+	for (int i = 0; i < corners.size(); i++)
+	{
+		circle(detectSrcCopy, corners[i], r, Scalar(255, 0, 255), -1, 8, 0);
+		cout << "	[" << i << "]  (" << corners[i].x << "," << corners[i].y << ")" << endl;
+	}
+	namedWindow(detectWindow, CV_WINDOW_AUTOSIZE);
+	imshow(detectWindow, detectSrcCopy);
+
+	Size winSize = Size(5, 5);
+	Size zeroZone = Size(-1, -1);
+	TermCriteria criteria = TermCriteria(
+		CV_TERMCRIT_EPS + CV_TERMCRIT_ITER,
+		40, //maxCount=40
+		0.001);	//epsilon=0.001
+	cornerSubPix(srcGray, corners, winSize, zeroZone, criteria);
+
+	cout << "-- After refinement: " << endl;
+	for (int i = 0; i < corners.size(); i++)
+	{
+		circle(refineSrcCopy, corners[i], r, Scalar(255, 0, 255), -1, 8, 0);
+		cout << "	[" << i << "]  (" << corners[i].x << "," << corners[i].y << ")" << endl;
+		//This part will draw the corner points on the original image from the camera.
+		circle(dst, Point(corners[i].x + startP.x, corners[i].y + startP.y), r, Scalar(255, 0, 255), -1, 8, 0);
+	}
+	namedWindow(refineWindow, CV_WINDOW_AUTOSIZE);
+	imshow(refineWindow, refineSrcCopy);
+	//Added 20150517 end
+
+	return srcClone;
 }
