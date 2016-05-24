@@ -84,8 +84,12 @@ public:
 	int getHoleSize(Mat &src, int x, int y, int &size, int(&judge)[1000][1000]);
 	//Copy object to the image
 	int copyObject(Mat &src, Mat &dst, int x, int y);
+	//Copy object to the image
+	int copyObjectBin(Mat &src, Mat &dst, int x, int y);
 	//Erase extra object in the image
-	int eraseObject(Mat &src, int x, int y, int deep);
+	int eraseObject(Mat &src, int x, int y, int deep, Vec3b a);
+	//Erase extra object in the image
+	int eraseObject(Mat &src, int x, int y, int deep, uchar a);
 	//Scan the object
 	int scanObject(Mat &src, int type, int x, int y, Point &p1);
 	//Find face with object
@@ -147,7 +151,11 @@ public:
 	//Detect the eyes using gray level
 	Mat getExactEyesGray(Mat &src, int threshold);
 	//Detect corner points of the face
-	Mat detectCornerPoints(Mat &src, Mat &dst, Point startP);
+	Mat detectCornerPoints(Mat &src, Mat &dst, Point startP, vector<Point>&cornerVec);
+	//Refine the binary image using corner points
+	Mat refineBinaryByCorner(Mat src, Mat &dst, vector<Point>&cornerVec, int threshold = 1);
+	//Check whether this binary object has corner point inside
+	int isHaveCorner(Mat src, vector<Point>&cornerVec, uchar a, int(&judge)[1000][1000], int &find, int threshold = 1, int x = 0, int y = 0);
 };
 
 #endif

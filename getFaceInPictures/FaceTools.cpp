@@ -495,7 +495,7 @@ int FaceTools::detectFaceSkinInVideo(Mat &src) {
 
 Mat FaceTools::detectFaceCornerInVideo(Mat &src, Mat &pre) {
 	Mat srcClone = src.clone(), next;
-
+	vector<Point>cornerVec;
 	/*
 	//This part uses calcOpticalFlowPyrLK to get change by frame in the video.
 	vector<Point2f> prepoint, nextpoint;
@@ -546,7 +546,7 @@ Mat FaceTools::detectFaceCornerInVideo(Mat &src, Mat &pre) {
 		Point startP = this->findFace(testframe5, frame, faceArea);
 		this->findMass(testframe5);
 		//this->findFacialFeatures(faceArea, eyeSkin, faceArea);
-		detectCornerPoints(faceArea, frame, startP);
+		detectCornerPoints(faceArea, frame, startP, cornerVec);
 
 		imshow("original", src);
 		//imshow("gray222", grayframe);
@@ -578,7 +578,7 @@ int FaceTools::processImage(Mat &src, Mat &dst) {
 				cout << "current size: " << size << endl;
 				//If object size is less than 100 * 100, just filter it.
 				if (size < 7500)
-					eraseObject(src, i, j, 0);
+					eraseObject(src, i, j, 0, Vec3b(100, 100, 100));
 				else {
 					copyObject(src, dst, i, j);
 				}
@@ -588,7 +588,7 @@ int FaceTools::processImage(Mat &src, Mat &dst) {
 			}
 		}
 	}
-
+	cout << "Function processImage end" << endl;
 	return 1;
 }
 
@@ -669,29 +669,70 @@ int FaceTools::copyObject(Mat &src, Mat &dst, int x, int y) {
 	return 1;
 }
 
-int FaceTools::eraseObject(Mat &src, int x, int y, int deep) {
+int FaceTools::copyObjectBin(Mat &src, Mat &dst, int x, int y) {
 	if (x < 0 || x >= src.rows)
 		return 0;
 	if (y < 0 || y >= src.cols)
 		return 0;
-	if (src.ptr<Vec3b>(x)[y] == Vec3b(100, 100, 100)) {
+	if (src.at<uchar>(x, y) == 255) {
 		return 0;
 	}
 
-	src.ptr<Vec3b>(x)[y] = Vec3b(100, 100, 100);
+	dst.at<uchar>(x, y) = src.at<uchar>(x, y);
+	src.at<uchar>(x, y) = 255;
 	//cout << deep << endl;
 
-	eraseObject(src, x, y - 1, deep + 1);
-	eraseObject(src, x, y + 1, deep + 1);
-	eraseObject(src, x - 1, y, deep + 1);
-	eraseObject(src, x + 1, y, deep + 1);
+	copyObjectBin(src, dst, x, y - 1);
+	copyObjectBin(src, dst, x, y + 1);
+	copyObjectBin(src, dst, x - 1, y);
+	copyObjectBin(src, dst, x + 1, y);
+
+	return 1;
+}
+
+int FaceTools::eraseObject(Mat &src, int x, int y, int deep, Vec3b a) {
+	if (x < 0 || x >= src.rows)
+		return 0;
+	if (y < 0 || y >= src.cols)
+		return 0;
+	if (src.ptr<Vec3b>(x)[y] == a) {
+		return 0;
+	}
+
+	src.ptr<Vec3b>(x)[y] = a;
+	//cout << deep << endl;
+
+	eraseObject(src, x, y - 1, deep + 1, a);
+	eraseObject(src, x, y + 1, deep + 1, a);
+	eraseObject(src, x - 1, y, deep + 1, a);
+	eraseObject(src, x + 1, y, deep + 1, a);
+
+	return 1;
+}
+
+int FaceTools::eraseObject(Mat &src, int x, int y, int deep, uchar a) {
+	if (x < 0 || x >= src.rows)
+		return 0;
+	if (y < 0 || y >= src.cols)
+		return 0;
+	if (src.at<uchar>(x, y) == a) {
+		return 0;
+	}
+
+	src.at<uchar>(x, y) = a;
+	//cout << deep << endl;
+
+	eraseObject(src, x, y - 1, deep + 1, a);
+	eraseObject(src, x, y + 1, deep + 1, a);
+	eraseObject(src, x - 1, y, deep + 1, a);
+	eraseObject(src, x + 1, y, deep + 1, a);
 
 	return 1;
 }
 
 Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 	int minDis = 99999, maxDis = 0, currentDis;
-	int minX = 9999, minY = 9999, maxX = 0 , maxY = 0;
+	int minX = src.cols, minY = src.rows, maxX = 0 , maxY = 0;
 	if (src.rows <= 0 || dst.rows <= 0)
 		return Point(0, 0);
 	for (int i = 0; i < src.rows; i++) {
@@ -713,7 +754,7 @@ Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 	//Use the face area to generate a new mat.
 	result = dst(Range(minY, maxY), Range(minX, maxX));
 	src = src(Range(minY, maxY), Range(minX, maxX));
-
+	cout << "Function findFace end" << endl;
 	return Point(minX, minY);
 }
 
@@ -869,12 +910,13 @@ int FaceTools::findFacialFeatures_20160128(Mat &src, Mat &dst, Mat &result) {
 int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 	vector<eyeInfo> eyeVec;
 	vector<mouthInfo> mouVec;
+	vector<Point>cornerVec;
 
 	Point noseCenter;
 
 	imshow("RGB Face", src);
 
-	detectCornerPoints(src, src.clone(), Point(0, 0));
+	detectCornerPoints(src, src.clone(), Point(0, 0), cornerVec);
 
 	if (!src.empty()){
 		Mat frame = src.clone();
@@ -882,11 +924,20 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		Mat faceBin = getBinaryFormat(frame, binaryThres);
 		imshow("bin", faceBin);
 
+		Mat faceBin2 = faceBin.clone();
+		for (int i = 0; i < faceBin2.rows; i++) {
+			for (int j = 0; j < faceBin2.cols; j++) {
+				faceBin2.at<uchar>(i, j) = 255;
+			}
+		}
+
+		refineBinaryByCorner(faceBin, faceBin2, cornerVec, 1);
+
 		//Added 20160518
 		//Try to find eyes through finding circles in the image by Hough.
 		getHoughCircles(frame, 1, 10);
 		//Try to find contours of eyes and nose by findContours
-		getContoursByCplus(frame, 0);
+		Mat cornerFrame = getContoursByCplus(frame, 0);
 		//Ended 20160518
 
 		cvtColor(frame, frame, CV_RGB2GRAY);
@@ -2197,24 +2248,25 @@ Mat FaceTools::getContoursByCplus(const Mat &src, int mode, double minarea, doub
 
 		Mat tempMat(tmp, 0);
 
-		vector<Vec3f> circles;
-		HoughCircles(tempMat, circles, CV_HOUGH_GRADIENT, 1.5, 10, 50, 25, 1, 10);
+		//vector<Vec3f> circles;
+		//HoughCircles(tempMat, circles, CV_HOUGH_GRADIENT, 1.5, 10, 50, 25, 1, 10);
 
-		//Draw Circle
-		cout << "circle size : " << circles.size() << endl;
-		for (size_t i = 0; i < circles.size(); i++)
-		{
-			Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-			int radius = cvRound(circles[i][2]);
-			//Draw center of circle
-			circle(tempMat, center, 3, Scalar(0, 255, 0), -1, 8, 0);
-			//Draw outline of circle
-			circle(tempMat, center, radius, Scalar(155, 50, 255), 3, 8, 0);
-		}
+		////Draw Circle
+		//cout << "circle size : " << circles.size() << endl;
+		//for (size_t i = 0; i < circles.size(); i++)
+		//{
+		//	Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+		//	int radius = cvRound(circles[i][2]);
+		//	//Draw center of circle
+		//	circle(tempMat, center, 3, Scalar(0, 255, 0), -1, 8, 0);
+		//	//Draw outline of circle
+		//	circle(tempMat, center, radius, Scalar(155, 50, 255), 3, 8, 0);
+		//}
 
 		imshow("Contours222", tempMat);
 		cvReleaseMemStorage(&storage);
 		storage = NULL;
+		dst = tempMat;
 		
 		// Create Window  
 		/*char* source_window = "countors";
@@ -2261,8 +2313,9 @@ Mat FaceTools::getExactEyesGray(Mat &src, int threshold) {
 	return result;
 }
 
-Mat FaceTools::detectCornerPoints(Mat &src, Mat &dst, Point startP) {
+Mat FaceTools::detectCornerPoints(Mat &src, Mat &dst, Point startP, vector<Point>&cornerVec) {
 	Mat srcClone = src.clone();
+	cornerVec.clear();
 
 	//Added 20150517 start
 	vector<Point2f> corners;
@@ -2301,8 +2354,8 @@ Mat FaceTools::detectCornerPoints(Mat &src, Mat &dst, Point startP) {
 		circle(detectSrcCopy, corners[i], r, Scalar(255, 0, 255), -1, 8, 0);
 		cout << "	[" << i << "]  (" << corners[i].x << "," << corners[i].y << ")" << endl;
 	}
-	namedWindow(detectWindow, CV_WINDOW_AUTOSIZE);
-	imshow(detectWindow, detectSrcCopy);
+	//namedWindow(detectWindow, CV_WINDOW_AUTOSIZE);
+	//imshow(detectWindow, detectSrcCopy);
 
 	Size winSize = Size(5, 5);
 	Size zeroZone = Size(-1, -1);
@@ -2318,11 +2371,73 @@ Mat FaceTools::detectCornerPoints(Mat &src, Mat &dst, Point startP) {
 		circle(refineSrcCopy, corners[i], r, Scalar(255, 0, 255), -1, 8, 0);
 		cout << "	[" << i << "]  (" << corners[i].x << "," << corners[i].y << ")" << endl;
 		//This part will draw the corner points on the original image from the camera.
-		circle(dst, Point(corners[i].x + startP.x, corners[i].y + startP.y), r, Scalar(255, 0, 255), -1, 8, 0);
+		Point temp(corners[i].x + startP.x, corners[i].y + startP.y);
+		circle(dst, temp, r, Scalar(255, 0, 255), -1, 8, 0);
+		cornerVec.push_back(temp);
 	}
 	namedWindow(refineWindow, CV_WINDOW_AUTOSIZE);
 	imshow(refineWindow, refineSrcCopy);
 	//Added 20150517 end
 
 	return srcClone;
+}
+
+Mat FaceTools::refineBinaryByCorner(Mat src, Mat &dst, vector<Point>&cornerVec, int threshold) {
+	Mat srcClone = src.clone();
+
+	int judgeM[1000][1000];
+	memset(judgeM, 0, sizeof(judgeM));
+	int size = 0;
+	if (srcClone.rows <= 0 || srcClone.cols <= 0) {
+		cout << "Illegal size of face area." << endl;
+		exit(1);
+	}
+	for (int i = 0; i < srcClone.rows; i++) {
+		for (int j = 0; j < srcClone.cols; j++) {
+			if (srcClone.at<uchar>(i, j) == 0){
+				//cout << "Eye Pos: " << i << " " << j << endl;
+				int find = 0;
+				isHaveCorner(srcClone, cornerVec, 255, judgeM, find, 1, i, j);
+				//cout << "Find at " << i << " " << j << " : " << find << endl;
+				if (0 == find)
+					eraseObject(srcClone, i, j, 1, 255);
+				else
+					copyObjectBin(src, dst, i, j);
+			}
+		}
+	}
+
+	imshow("After Refine", dst);
+	waitKey();
+
+	return srcClone;
+}
+
+int FaceTools::isHaveCorner(Mat src, vector<Point>&cornerVec, uchar a, int(&judge)[1000][1000], int &find, int threshold, int x, int y) {
+	if (x < 0 || x >= src.rows - 1)
+		return 0;
+	if (y < 0 || y >= src.cols - 1)
+		return 0;
+	if (src.at<uchar>(x, y) == a) {
+		return 0;
+	}
+	if (judge[x][y] == 1) {
+		return 0;
+	}
+
+	judge[x][y] = 1;
+	for (int i = 0; i < cornerVec.size(); i++) {
+		if (x == cornerVec[i].y && y == cornerVec[i].x)
+			find = 1;
+	}
+
+	if (find == 1)
+		return 1;
+
+	isHaveCorner(src, cornerVec, a, judge, find, threshold, x, y - 1);
+	isHaveCorner(src, cornerVec, a, judge, find, threshold, x, y + 1);
+	isHaveCorner(src, cornerVec, a, judge, find, threshold, x - 1, y);
+	isHaveCorner(src, cornerVec, a, judge, find, threshold, x + 1, y);
+
+	return 1;
 }
