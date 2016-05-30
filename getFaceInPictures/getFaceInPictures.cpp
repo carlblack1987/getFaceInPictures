@@ -148,19 +148,47 @@ int main(void)
 		//Mat frame = imread(picFilePath + "Person14\\person14122-30+30.jpg");
 
 		//New Images from 20160418
-		Mat frame = imread(picFilePath + "20160418160120 01.jpg");
+		//Mat frame = imread(picFilePath + "20160418160120 01.jpg");
 		//Right 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 07.jpg");
 		//Right Up 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 13.jpg");
 		//Right Down 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 19.jpg");
+		//Left 10 degree gradient ok
+		//Mat frame = imread(picFilePath + "20160418160120 32.jpg");
 		//Left 15 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 37.jpg");
+		//Left 20
+		//Mat frame = imread(picFilePath + "20160418160120 48.jpg");
 		//Left 30 degree gradient ok
 		//Mat frame = imread(picFilePath + "20160418160120 39.jpg");
 		//Left Down 30 degree
 		//Mat frame = imread(picFilePath + "20160418160120 46.jpg");
+		//Left Up 30 degree
+		//Mat frame = imread(picFilePath + "20160418160120 43.jpg");
+
+		//New Images from 20160530
+		//Right in front refine not ok
+		Mat frame = imread(picFilePath + "20160530133431 04.jpg");
+		//Right 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+
+
+
+		//With glasses:
+		//Left Up 30 degree
+		//Mat frame = imread(picFilePath + "20160529154711 05.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);

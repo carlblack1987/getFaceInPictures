@@ -10,6 +10,7 @@
 #include <vector>
 #include "findEyeCenter.h"
 #include <math.h>
+#include <queue>
 
 #define PI 3.14159265f
 
@@ -96,8 +97,6 @@ public:
 	Point findFace(Mat &src, Mat &dst, Mat &result);
 	//Find the mass center of the face, src is the result of skin detection
 	int findMass(Mat &src);
-	//Find face with object, this is a bak version
-	int findFacialFeatures_20160128(Mat &src, Mat &dst, Mat &result);
 	//Find face with object
 	int findFacialFeatures(Mat &src, Mat &dst, Mat &result);
 	//Scan the hole
