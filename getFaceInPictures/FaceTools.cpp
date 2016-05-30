@@ -22,7 +22,7 @@ const int mouMinSize = 110;
 const int mouthPosRange = 5;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1200;
-const int binaryThres = 50;
+const int binaryThres = 40;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
@@ -41,6 +41,34 @@ Vec3b cwhite = Vec3b::all(255);
 Vec3b cblack = Vec3b::all(0);
 vector<string> templist;
 string outputpath = "E:\\faceTemplate\\FaceOutput\\";
+
+struct binaryPoint {
+	int i;
+	int j;
+	binaryPoint & operator = (binaryPoint &b);
+};
+
+binaryPoint & binaryPoint::operator = (binaryPoint &b) {
+	this->i = b.i;
+	this->j = b.j;
+	return *this;
+}
+
+binaryPoint operator + (binaryPoint a, binaryPoint b) {
+	binaryPoint temp;
+	temp.i = a.i + b.i;
+	temp.j = a.j + b.j;
+	return temp;
+}
+
+bool operator == (binaryPoint a, binaryPoint b) {
+	if (a.i == b.i && a.j == b.j)
+		return true;
+	else
+		return false;
+}
+
+binaryPoint movements[4] = { { -1, 0 }, { 1, 0 }, { 0, -1 }, { 0, 1 } };
 
 Mat norm_0_255(const Mat& src) {
 	Mat dst;
@@ -731,8 +759,9 @@ int FaceTools::eraseObject(Mat &src, int x, int y, int deep, uchar a) {
 }
 
 Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
+	cout << "Function findFace start" << endl;
 	int minDis = 99999, maxDis = 0, currentDis;
-	int minX = src.cols, minY = src.rows, maxX = 0 , maxY = 0;
+	int minX = src.cols - 1, minY = src.rows - 1, maxX = 0 , maxY = 0;
 	if (src.rows <= 0 || dst.rows <= 0)
 		return Point(0, 0);
 	for (int i = 0; i < src.rows; i++) {
@@ -756,155 +785,7 @@ Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 	src = src(Range(minY, maxY), Range(minX, maxX));
 	cout << "Function findFace end" << endl;
 	return Point(minX, minY);
-}
 
-int FaceTools::findFacialFeatures_20160128(Mat &src, Mat &dst, Mat &result) {
-	int minDis = 99999, maxDis = 0, currentDis;
-	int minX = 9999, minY = 9999, maxX = 0, maxY = 0;
-	int judgeM[1000][1000];
-	int size = 0;
-	memset(judgeM, 0, sizeof(judgeM));
-
-	if (!src.empty()){
-		Mat frame = src.clone();
-		Mat finalresult = src.clone();
-		Mat faceArea;
-		cvtColor(frame, grayframe, CV_BGR2GRAY);
-		equalizeHist(grayframe, testframe);
-		Mat thres_lab = this->GetSkin(frame, testframe);
-		Mat testframe2 = this->maskOnImage(thres_lab, frame);
-		Mat testframe3, testframe4;
-		erode(testframe2, testframe3, Mat(5, 5, CV_8U), Point(-1, -1), 2);
-		dilate(testframe3, testframe4, Mat(5, 5, CV_8U), Point(-1, -1), 2);
-		Mat orginal2 = testframe4.clone();
-		Mat testframe7 = testframe4.clone();
-		Mat testframe8 = testframe4.clone();
-		for (int i = 0; i < testframe7.rows / 4; i++) {
-			for (int j = 0; j < testframe7.cols; j++) {
-				testframe7.ptr<Vec3b>(i)[j] = Vec3b(200, 200, 200);
-			}
-		}
-		for (int i = testframe7.rows / 2; i < testframe7.rows; i++) {
-			for (int j = 0; j < testframe7.cols; j++) {
-				testframe7.ptr<Vec3b>(i)[j] = Vec3b(200, 200, 200);
-			}
-		}
-
-		Mat faceBin = getBinaryFormat(frame, 60);
-
-		//Generate a new mat only contains eye area
-		Mat eyeAreaOri = faceBin(Range(frame.rows / 5, frame.rows / 1.8), Range(frame.cols / 10, frame.cols * 0.9));
-		//Generate a new mat only contains mouth area
-		Mat mouthAreaOri = faceBin(Range(frame.rows / 1.7, frame.rows / 1.1), Range(frame.cols / 10, frame.cols * 0.9));
-
-		imshow("mouth", mouthAreaOri);
-		//waitKey();
-
-		for (int i = 0; i < testframe8.rows * 0.55; i++) {
-			for (int j = 0; j < testframe8.cols; j++) {
-				testframe8.ptr<Vec3b>(i)[j] = Vec3b(100, 100, 100);
-			}
-		}
-		for (int i = testframe8.rows * 0.8; i < testframe8.rows; i++) {
-			for (int j = 0; j < testframe8.cols; j++) {
-				testframe8.ptr<Vec3b>(i)[j] = Vec3b(100, 100, 100);
-			}
-		}
-
-		//Mat eyeResult = getExactEyes(eyeAreaOri, eyeAreaOri, 400);
-
-		//Mat mouthResult = getExactMouth(mouthAreaOri, mouthAreaOri, 200);
-
-		//imshow("eyes", eyeResult);
-		//imshow("Mouth", mouthResult);
-		//waitKey();
-		//Mat eyeAreaExact = getExactEyeArea(eyeAreaOri, horiPro);
-
-		Mat testframe5 = testframe7.clone();
-		Mat testframe6 = testframe7.clone();
-		Mat testframe9 = testframe8.clone();
-		Mat testframe10 = testframe8.clone();
-		//Eye area
-		rectangle(orginal2, Point(0, orginal2.rows / 4), Point(orginal2.cols, orginal2.rows / 2), Scalar(0, 255, 0), 1, 1, 0);
-		//Month area
-		rectangle(orginal2, Point(0, orginal2.rows * 0.6), Point(orginal2.cols, orginal2.rows * 0.95), Scalar(0, 255, 0), 1, 1, 0);
-
-		if (testframe7.rows <= 0 || testframe7.cols <= 0)
-			return 0;
-		for (int i = testframe7.rows / 4; i < testframe7.rows / 2; i++) {
-			for (int j = 0; j < testframe7.cols; j++) {
-				if (testframe7.ptr<Vec3b>(i)[j] == Vec3b(100, 100, 100)){
-					//cout << "Pos: " << i << " " << j << endl;
-					size = 0;
-					this->getHoleSize(testframe7, i, j, size, judgeM);
-					if (size > 0)
-						cout << "current hole size: " << size << endl;
-					//If object size is less than 100 * 100, just filter it.
-					if (size > 1000) {
-						Point topNode(j, i);
-						Point botNode(0, 0);
-						cout << "Pos: " << i << " " << j << endl;
-						cout << "current hole size: " << size << endl;
-						this->scanHole(testframe5, 1, i, j, topNode);
-						this->scanHole(testframe6, 2, i, j, botNode);
-						rectangle(orginal2, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
-						rectangle(result, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
-						//eraseObject(orginal2, i, j, 0);
-					}
-					else {
-						//copyObject(orginal2, dst, i, j);
-					}
-				}
-				else {
-					minY = i < minY ? i : minY;
-					maxY = i > maxY ? i : maxY;
-					minX = j < minX ? j : minX;
-					maxX = j > maxX ? j : maxX;
-				}
-			}
-		}
-
-		Point monthP(0, 0);
-		int maxRed = 0;
-		int monthValue = 0;
-		if (testframe8.rows <= 0 || testframe8.cols <= 0)
-			return 0;
-		for (int i = testframe8.rows * 0.6; i < testframe8.rows * 0.95; i++) {
-			for (int j = 0; j < testframe8.cols; j++) {
-				if (testframe8.ptr<Vec3b>(i)[j] != Vec3b(100, 100, 100)){
-					Vec3b pix_bgr = testframe8.ptr<Vec3b>(i)[j];
-					float B = pix_bgr.val[0];
-					float G = pix_bgr.val[1];
-					float R = pix_bgr.val[2];
-					monthValue = (R - G) + (B - G);
-					//cout << "Month: " << i << " " << j << " " << monthValue << endl;
-					if (maxRed <= monthValue) {
-						maxRed = monthValue;
-						monthP.x = j;
-						monthP.y = i;
-					}
-					//cout << "Pos: " << i << " " << j << endl;
-
-				}
-				else {
-					minY = i < minY ? i : minY;
-					maxY = i > maxY ? i : maxY;
-					minX = j < minX ? j : minX;
-					maxX = j > maxX ? j : maxX;
-				}
-			}
-		}
-		cout << "Red: " << monthP.x << " " << monthP.y << " " << maxRed << endl;
-		rectangle(orginal2, Point(monthP.x - 20, monthP.y - 10), Point(monthP.x + 20, monthP.y + 10), Scalar(0, 255, 0), 1, 1, 0);
-		rectangle(result, Point(monthP.x - 20, monthP.y - 10), Point(monthP.x + 20, monthP.y + 10), Scalar(0, 255, 0), 1, 1, 0);
-		dst = orginal2;
-	}
-	else{
-		printf(" No input frame detected.");
-		return 0;
-	}
-
-	return 1;
 }
 
 int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
@@ -925,13 +806,8 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		imshow("bin", faceBin);
 
 		Mat faceBin2 = faceBin.clone();
-		for (int i = 0; i < faceBin2.rows; i++) {
-			for (int j = 0; j < faceBin2.cols; j++) {
-				faceBin2.at<uchar>(i, j) = 255;
-			}
-		}
 
-		refineBinaryByCorner(faceBin, faceBin2, cornerVec, 1);
+		refineBinaryByCorner(faceBin, faceBin2, cornerVec, 0);
 
 		//Added 20160518
 		//Try to find eyes through finding circles in the image by Hough.
@@ -943,10 +819,10 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		cvtColor(frame, frame, CV_RGB2GRAY);
 
 		//Generate a new mat only contains eye area
-		Mat eyeAreaOri = faceBin(Range(frame.rows * eyeSearchRowStartRatio, frame.rows * eyeSearchRowEndRatio), 
+		Mat eyeAreaOri = faceBin2(Range(frame.rows * eyeSearchRowStartRatio, frame.rows * eyeSearchRowEndRatio),
 			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
 		//Generate a new mat only contains mouth area
-		Mat mouthAreaOri = faceBin(Range(frame.rows * mouthSearchRowStartRatio, frame.rows * mouthSearchRowEndRatio), 
+		Mat mouthAreaOri = faceBin2(Range(frame.rows * mouthSearchRowStartRatio, frame.rows * mouthSearchRowEndRatio),
 			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
 		//Generate a new mat only contains mouth area
 		Mat eyeAreaGray = frame(Range(frame.rows * eyeSearchRowStartRatio, frame.rows * eyeSearchRowEndRatio),
@@ -2384,6 +2260,12 @@ Mat FaceTools::detectCornerPoints(Mat &src, Mat &dst, Point startP, vector<Point
 
 Mat FaceTools::refineBinaryByCorner(Mat src, Mat &dst, vector<Point>&cornerVec, int threshold) {
 	Mat srcClone = src.clone();
+	//Erase the dst
+	for (int i = 0; i < dst.rows; i++) {
+		for (int j = 0; j < dst.cols; j++) {
+			dst.at<uchar>(i, j) = 255;
+		}
+	}
 
 	int judgeM[1000][1000];
 	memset(judgeM, 0, sizeof(judgeM));
@@ -2397,24 +2279,24 @@ Mat FaceTools::refineBinaryByCorner(Mat src, Mat &dst, vector<Point>&cornerVec, 
 			if (srcClone.at<uchar>(i, j) == 0){
 				//cout << "Eye Pos: " << i << " " << j << endl;
 				int find = 0;
-				isHaveCorner(srcClone, cornerVec, 255, judgeM, find, 1, i, j);
+				isHaveCorner(srcClone, cornerVec, 255, judgeM, find, threshold, i, j);
 				//cout << "Find at " << i << " " << j << " : " << find << endl;
 				if (0 == find)
 					eraseObject(srcClone, i, j, 1, 255);
-				else
-					copyObjectBin(src, dst, i, j);
+				else if (find > threshold)
+					copyObjectBin(srcClone, dst, i, j);
 			}
 		}
 	}
 
 	imshow("After Refine", dst);
-	waitKey();
+	//waitKey();
 
 	return srcClone;
 }
 
 int FaceTools::isHaveCorner(Mat src, vector<Point>&cornerVec, uchar a, int(&judge)[1000][1000], int &find, int threshold, int x, int y) {
-	if (x < 0 || x >= src.rows - 1)
+	/*if (x < 0 || x >= src.rows - 1)
 		return 0;
 	if (y < 0 || y >= src.cols - 1)
 		return 0;
@@ -2428,16 +2310,56 @@ int FaceTools::isHaveCorner(Mat src, vector<Point>&cornerVec, uchar a, int(&judg
 	judge[x][y] = 1;
 	for (int i = 0; i < cornerVec.size(); i++) {
 		if (x == cornerVec[i].y && y == cornerVec[i].x)
-			find = 1;
+			find ++;
 	}
 
-	if (find == 1)
+	if (find > threshold)
 		return 1;
 
 	isHaveCorner(src, cornerVec, a, judge, find, threshold, x, y - 1);
 	isHaveCorner(src, cornerVec, a, judge, find, threshold, x, y + 1);
 	isHaveCorner(src, cornerVec, a, judge, find, threshold, x - 1, y);
-	isHaveCorner(src, cornerVec, a, judge, find, threshold, x + 1, y);
+	isHaveCorner(src, cornerVec, a, judge, find, threshold, x + 1, y);*/
+
+	if (x < 0 || x >= src.rows - 1)
+		return 0;
+	if (y < 0 || y >= src.cols - 1)
+		return 0;
+
+	int i = x, j = y;
+	queue<binaryPoint>que;
+	binaryPoint start;
+	start.i = x, start.j = y;
+	que.push(start);
+	judge[i][j] = 1;
+	int *cornerList = new int[cornerVec.size()];
+	memset(cornerList, 0, cornerVec.size() * sizeof(int));
+
+	while (!que.empty()) {
+		binaryPoint cur = que.front();
+		que.pop();
+		//cout << "Current: " << cur.i << " " << cur.j << endl;
+		for (int i = 0; i < 4; i++) {
+			binaryPoint temp = cur + movements[i];
+			//cout << "Temp: " << temp.i << " " << temp.j << endl;
+			if (temp.i >= 0 && temp.i < src.rows && temp.j >= 0 && temp.j < src.cols) {
+				if (judge[temp.i][temp.j] == 0 && src.at<uchar>(temp.i, temp.j) != a) {
+					que.push(temp);
+					judge[temp.i][temp.j] = 1;
+					for (int z = 0; z < cornerVec.size(); z++) {
+						//float dis = (float)sqrt((float)pow(temp.i - cornerVec[z].y, 2) + (float)pow(temp.j - cornerVec[z].x, 2));
+						int dis = sqrt(pow(temp.i - cornerVec[z].y, 2) + pow(temp.j - cornerVec[z].x, 2));
+						if (dis < 3.0 && cornerList[z] == 0) {
+							cornerList[z] = 1;
+							find++;
+						}
+						if (find > threshold)
+							return 1;
+					}
+				}
+			}
+		}
+	}
 
 	return 1;
 }
