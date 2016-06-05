@@ -169,14 +169,14 @@ int main(void)
 		//Mat frame = imread(picFilePath + "20160418160120 43.jpg");
 
 		//New Images from 20160530
-		//Right in front refine not ok
-		Mat frame = imread(picFilePath + "20160530133431 04.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right in front binary = 45 ok 3 0.004 distraction: 0.032
+		Mat frame = imread(picFilePath + "20160601190750 005.jpg");
+		//Right 20 up 30 degrees 11 0.322 distraction: 0.445
+		//Mat frame = imread(picFilePath + "20160530133431 16.jpg");
+		//Right 30 up 30 degrees 14 0.332 distraction: 0.495
+		//Mat frame = imread(picFilePath + "20160530133431 17.jpg");
+		//Right 45 up 30 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 22.jpg");
 		//Right 15 degrees
 		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
 		//Right 15 degrees
