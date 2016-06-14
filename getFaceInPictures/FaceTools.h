@@ -99,6 +99,8 @@ public:
 	int findMass(Mat &src);
 	//Find face with object
 	int findFacialFeatures(Mat &src, Mat &dst, Mat &result);
+	//Find face with object using cascades
+	int findFacialFeaturesCascade(Mat &src, Mat &dst, Mat &result);
 	//Scan the hole
 	int scanHole(Mat &src, int type, int x, int y, Point &p1);
 	////Get the sobel border of the input image

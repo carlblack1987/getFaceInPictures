@@ -32,6 +32,11 @@ const int cannyLowThres = 60;
 const int cannyHighThres = 120;
 
 CascadeClassifier face, mouth, eye, nose;
+string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
+string face_cascade_name = opencvLibPath + "haarcascade_frontalface_alt.xml";
+string eye_cascade_name = "E:\\opencv\\build\\x64\\vc12\\bin\\eyeimgs\\data\\cascade.xml";
+//string eye_cascade_name = "E:\\opencv\\sources\\data\\haarcascades\\haarcascade_eye.xml";
+
 Mat frame, grayframe, testframe;
 Mat temp_rgb, temp_ycbcr, temp_hsv, temp_lab, temp_face;
 Mat thres_ycbcr, thres_hsv, thres_lab;
@@ -41,6 +46,62 @@ Vec3b cwhite = Vec3b::all(255);
 Vec3b cblack = Vec3b::all(0);
 vector<string> templist;
 string outputpath = "E:\\faceTemplate\\FaceOutput\\";
+
+template <typename _Tp>
+void ELBP_(const Mat& src, Mat& dst, int radius, int neighbors) {
+	neighbors = max(min(neighbors, 31), 1); // set bounds...
+	// Note: alternatively you can switch to the new OpenCV Mat_
+	// type system to define an unsigned int matrix... I am probably
+	// mistaken here, but I didn't see an unsigned int representation
+	// in OpenCV's classic typesystem...
+	dst = Mat::zeros(src.rows - 2 * radius, src.cols - 2 * radius, CV_32SC1);
+	for (int n = 0; n<neighbors; n++) {
+		// sample points
+		float x = static_cast<float>(radius)* cos(2.0*M_PI*n / static_cast<float>(neighbors));
+		float y = static_cast<float>(radius)* -sin(2.0*M_PI*n / static_cast<float>(neighbors));
+		// relative indices
+		int fx = static_cast<int>(floor(x));
+		int fy = static_cast<int>(floor(y));
+		int cx = static_cast<int>(ceil(x));
+		int cy = static_cast<int>(ceil(y));
+		// fractional part
+		float ty = y - fy;
+		float tx = x - fx;
+		// set interpolation weights
+		float w1 = (1 - tx) * (1 - ty);
+		float w2 = tx  * (1 - ty);
+		float w3 = (1 - tx) *      ty;
+		float w4 = tx  *      ty;
+		// iterate through your data
+		for (int i = radius; i < src.rows - radius; i++) {
+			for (int j = radius; j < src.cols - radius; j++) {
+				float t = w1*src.at<_Tp>(i + fy, j + fx) + w2*src.at<_Tp>(i + fy, j + cx) + w3*src.at<_Tp>(i + cy, j + fx) + w4*src.at<_Tp>(i + cy, j + cx);
+				// we are dealing with floating point precision, so add some little tolerance
+				dst.at<unsigned int>(i - radius, j - radius) += ((t > src.at<_Tp>(i, j)) && (abs(t - src.at<_Tp>(i, j)) > std::numeric_limits<float>::epsilon())) << n;
+			}
+		}
+	}
+}
+
+template <typename _Tp>
+void OLBP_(const Mat& src, Mat& dst) {
+	dst = Mat::zeros(src.rows - 2, src.cols - 2, CV_8UC1);
+	for (int i = 1; i<src.rows - 1; i++) {
+		for (int j = 1; j<src.cols - 1; j++) {
+			_Tp center = src.at<_Tp>(i, j);
+			unsigned char code = 0;
+			code |= (src.at<_Tp>(i - 1, j - 1) > center) << 7;
+			code |= (src.at<_Tp>(i - 1, j) > center) << 6;
+			code |= (src.at<_Tp>(i - 1, j + 1) > center) << 5;
+			code |= (src.at<_Tp>(i, j + 1) > center) << 4;
+			code |= (src.at<_Tp>(i + 1, j + 1) > center) << 3;
+			code |= (src.at<_Tp>(i + 1, j) > center) << 2;
+			code |= (src.at<_Tp>(i + 1, j - 1) > center) << 1;
+			code |= (src.at<_Tp>(i, j - 1) > center) << 0;
+			dst.at<unsigned char>(i - 1, j - 1) = code;
+		}
+	}
+}
 
 struct binaryPoint {
 	int i;
@@ -832,6 +893,101 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		Mat eyeResultGray = getExactEyesGray(eyeAreaGray, eyeMinSize);
 		imshow("eyes", eyeResult);
 		imshow("Mouth", mouthResult);
+		//imshow("Nose", noseResult);
+
+		drawFacialFeatures(result, faceBin, eyeVec, mouVec, noseCenter);
+
+		calculateFace(result, eyeAreaOri, eyeVec, mouVec, noseCenter);
+
+		dst = result;
+	}
+	else{
+		printf(" No input frame detected.");
+		return 0;
+	}
+	return 1;
+}
+
+int FaceTools::findFacialFeaturesCascade(Mat &src, Mat &dst, Mat &result) {
+	vector<eyeInfo> eyeVec;
+	vector<mouthInfo> mouVec;
+	vector<Point>cornerVec;
+
+	Point noseCenter;
+
+	imshow("RGB Face", src);
+
+	if (!src.empty()){
+		Mat frame = src.clone();
+		Mat LBPFrame = src.clone();
+
+		Mat faceBin = getBinaryFormat(frame, binaryThres);
+		imshow("bin", faceBin);
+
+		//Generate a new mat only contains eye area
+		Mat eyeAreaOri = faceBin(Range(frame.rows * eyeSearchRowStartRatio, frame.rows * eyeSearchRowEndRatio),
+			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
+		//Generate a new mat only contains mouth area
+		Mat mouthAreaOri = faceBin(Range(frame.rows * mouthSearchRowStartRatio, frame.rows * mouthSearchRowEndRatio),
+			Range(frame.cols * feaSearchColStartRatio, frame.cols * feaSearchColEndRatio));
+
+		Mat mouthResult = getExactMouth(mouthAreaOri, mouVec, mouMinSize);
+
+		eye.load(eye_cascade_name);
+
+		cvtColor(frame, frame, CV_BGR2GRAY);
+		vector <Rect> mouthi;
+		vector <Rect> eyei;
+		//mouth.detectMultiScale(face, mouthi);
+		eye.detectMultiScale(frame, eyei);
+		cout << "Mouth size: " << mouthi.size() << endl;
+		cout << "Eyes size: " << eyei.size() << endl;
+
+		if (eyei.size() == 1) {
+			eyeInfo temp;
+			cout << eyei[0].width << " " << eyei[0].height << endl;
+			temp.topNode = Point(eyei[0].x, eyei[0].y);
+			temp.botNode = Point(temp.topNode.x + eyei[0].width, temp.topNode.y + eyei[0].height);
+			temp.cenNode = Point((temp.topNode.x + temp.botNode.x) / 2, (temp.topNode.y + temp.botNode.y) / 2);
+			temp.type = 1;
+			temp.size = 1000;
+
+			Rect tempEye(temp.topNode, temp.botNode);
+			//Mat eyeTemp = src(tempEye);
+			//-- Find Eye Centers
+			Point leftPupil = findEyeCenter(faceBin, tempEye, "Left Eye");
+			//Point leftPupil = findEyeCenter(srcImage, tempEye, "Left Eye");
+			cout << "pupil: " << leftPupil.x << " " << leftPupil.y << endl;
+			leftPupil.x += tempEye.x;
+			leftPupil.y += tempEye.y;
+			temp.pupil = leftPupil;
+
+			eyeVec.push_back(temp);
+		}
+		else if (eyei.size() >= 2) {
+			eyeInfo temp;
+			temp.topNode = Point(eyei[0].x, eyei[0].y);
+			temp.botNode = Point(temp.topNode.x + eyei[0].width, temp.topNode.y + eyei[0].height);
+			temp.cenNode = Point((temp.topNode.x + temp.botNode.x) / 2, (temp.topNode.y + temp.botNode.y) / 2);
+			temp.type = 1;
+			temp.size = 1000;
+
+			eyeInfo temp2;
+			temp2.topNode = Point(eyei[0].x, eyei[0].y);
+			temp2.botNode = Point(temp2.topNode.x + eyei[0].width, temp2.topNode.y + eyei[0].height);
+			temp2.cenNode = Point((temp2.topNode.x + temp2.botNode.x) / 2, (temp2.topNode.y + temp2.botNode.y) / 2);
+			temp2.type = 1;
+			temp2.size = 1000;
+
+			eyeVec.push_back(temp);
+			eyeVec.push_back(temp2);
+		}
+
+		//Mat eyeResult = getExactEyes(eyeAreaOri, eyeVec, eyeMinSize);
+		//Mat mouthResult = getExactMouth(mouthAreaOri, mouVec, mouMinSize);
+		//Mat eyeResultGray = getExactEyesGray(eyeAreaGray, eyeMinSize);
+		//imshow("eyes", eyeResult);
+		//imshow("Mouth", mouthResult);
 		//imshow("Nose", noseResult);
 
 		drawFacialFeatures(result, faceBin, eyeVec, mouVec, noseCenter);
