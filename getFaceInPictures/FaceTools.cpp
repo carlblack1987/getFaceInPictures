@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
-const float eyeSearchRowStartRatio = 0.000;
-const float eyeSearchRowEndRatio = 0.500;
+const float eyeSearchRowStartRatio = 0.102;
+const float eyeSearchRowEndRatio = 0.488;
 const float mouthSearchRowStartRatio = 0.530;
 const float mouthSearchRowEndRatio = 0.909;
 const float noseSearchRowStartRatio = 0.5;
@@ -21,7 +21,7 @@ const int eyeMinSize = 100;
 const int mouMinSize = 110;
 const int mouthPosRange = 5;
 const int eyesDistance = 40;
-const int eyeSizeLimit = 1200;
+const int eyeSizeLimit = 1250;
 const int binaryThres = 40;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
@@ -442,7 +442,6 @@ int FaceTools::detectFaceSkin(Mat &src) {
 			}
 		}
 		this->processImage(testframe4, testframe5);
-		//imshow("7777", testframe5);
 		this->findFace(testframe5, frame, faceArea);
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 		this->findMass(testframe5);
@@ -1022,7 +1021,6 @@ Mat FaceTools::getBinaryFormat(Mat &src, int value) {
 	cvtColor(srcImage, srcImage, CV_RGB2GRAY);
 	equalizeHist(srcImage, srcImage);
 	threshold(srcImage, srcImage, value, 255, CV_THRESH_BINARY);
-
 	return srcImage;
 }
 

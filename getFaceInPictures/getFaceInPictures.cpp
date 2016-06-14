@@ -170,19 +170,19 @@ int main(void)
 
 		//New Images from 20160530
 		//Right in front refine not ok
-		Mat frame = imread(picFilePath + "20160530133431 04.jpg");
+		//Mat frame = imread(picFilePath + "20160530133431 04.jpg");
+		//Right 15 degrees
+		Mat frame = imread(picFilePath + "20160530133431 15.jpg");
 		//Right 15 degrees
 		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
 		//Right 15 degrees
 		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
+		//Right 75 down 15 degrees
+		//Mat frame = imread(picFilePath + "20160530133431 23.jpg");
+		//Right 75 up 15 degrees not ok
+		//Mat frame = imread(picFilePath + "20160530133431 26.jpg");
+		//Right 75 degrees ok
+		//Mat frame = imread(picFilePath + "20160530133431 21.jpg");
 
 
 
