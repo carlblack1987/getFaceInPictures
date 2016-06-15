@@ -2,8 +2,8 @@
 
 const float eyeSearchRowStartRatio = 0.102;
 const float eyeSearchRowEndRatio = 0.488;
-const float mouthSearchRowStartRatio = 0.530;
-const float mouthSearchRowEndRatio = 0.909;
+const float mouthSearchRowStartRatio = 0.48;
+const float mouthSearchRowEndRatio = 0.850;
 const float noseSearchRowStartRatio = 0.5;
 const float noseSearchRowEndRatio = 0.75;
 const float feaSearchColStartRatio = 0.02;
@@ -17,9 +17,9 @@ const int noseVectorY = 13;
 const int noseAreaRange = 10;
 const float noseStartRatio = 0.3;
 const float noseEndRatio = 0.85;
-const int eyeMinSize = 100;
-const int mouMinSize = 110;
-const int mouthPosRange = 5;
+const int eyeMinSize = 80;
+const int mouMinSize = 100;
+const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
 const int binaryThres = 40;
@@ -505,7 +505,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		this->processImage(testframe4, testframe5);
 		this->findFace(testframe5, frame, faceArea);
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
-		this->findMass(testframe5);
+		//this->findMass(testframe5);
 		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
 
 		vector<int> compression_params;
@@ -867,7 +867,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 		Mat faceBin2 = faceBin.clone();
 
-		refineBinaryByCorner(faceBin, faceBin2, cornerVec, 0);
+		//refineBinaryByCorner(faceBin, faceBin2, cornerVec, 0);
 
 		//Added 20160518
 		//Try to find eyes through finding circles in the image by Hough.
@@ -1220,11 +1220,11 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 					double eyeHeightRatio = (double)abs(topNode.y - botNode.y) / src.rows;
 					rectangle(result, topNode, botNode, Scalar(0, 255, 0), 1, 1, 0);
 					cout << "Eye size limit: " << eyeSizeLimit << ", real size: " << size << endl;
-					cout << "eyeWidthRatioLimit: " << eyeWidthRatio << " " << eyeHeightRatio << endl;
-					/*imshow("222", result);
-					waitKey();*/
-					//if (centerX >= 20 && centerX <= srcClone.cols - 20) {
-					if (size < eyeSizeLimit && eyeWidthRatio < eyeWidthRatioLimit 
+					cout << "eyeWidthRatioLimit: " << eyeWidthRatio << " " << eyeWidthRatioLimit << endl;
+					cout << "eyeHeightRatioLimit: " << eyeHeightRatio << " " << eyeHeightRatioLimit << endl;
+					/*if (size < eyeSizeLimit && eyeWidthRatio < eyeWidthRatioLimit 
+						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10 && topNode.y > 5) {*/
+					if (size < eyeSizeLimit && eyeWidthRatio < eyeWidthRatioLimit
 						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10 && topNode.y > 5) {
 						int size = abs((botNode.x - topNode.x) * (botNode.y - topNode.y));
 						if (eyeVec.size() == 0) {
@@ -1655,7 +1655,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		//Change the nodes' positions if necessary
 		//changeMouPosition(mouVec, 20, 20);
 		//Calculate head angle
-		msg = "Face Angle: ";
+		msg = "FA: ";
 		eyeCenter.x = (eyeVec[0].pupil.x + eyeVec[1].pupil.x) / 2;
 		eyeCenter.y = (eyeVec[0].pupil.y + eyeVec[1].pupil.y) / 2;
 		divided = eyeCenter.x - mouVec[0].centerNode.x;
@@ -1690,7 +1690,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 				continue;
 		}
 		eye_offset = (float)abs(eyeVec[0].cenNode.x + eyeVec[1].cenNode.x - src.cols) / src.cols;
-		cout << "The offset of eyes: " << eye_offset << endl;
+		cout << "OFE: " << eye_offset << endl;
 
 		os.str("");
 		msg3 = "Eyes Offset: ";
@@ -1713,7 +1713,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		cout << "The offset of nose: " << dis_nose << endl;
 
 		os.str("");
-		msg4 = "Nose Offset: ";
+		msg4 = "NOF: ";
 		os << nose_offset;
 		msg4 += os.str();
 
@@ -1723,7 +1723,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		cout << "Distraction: " << concentration << endl;
 
 		os.str("");
-		msg5 = "Distraction: ";
+		msg5 = "Dis: ";
 		os << concentration;
 		msg5 += os.str();
 	}
