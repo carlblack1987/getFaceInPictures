@@ -114,7 +114,7 @@ int main(void)
 		//Left_Left_2 bad Problem: Left eye not detected
 		//Mat frame = imread(picFilePath + "20160614191547 928.jpg");
 		//Normal_3 OK
-		//Mat frame = imread(picFilePath + "20160614191547 974.jpg");
+		Mat frame = imread(picFilePath + "20160614191547 974.jpg");
 
 		//Yamazaki
 		//Normal bad Problem: clothes's color close to skin

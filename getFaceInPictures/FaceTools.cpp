@@ -1698,7 +1698,8 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg3 += os.str();
 
 		//Calculate the horizontal inclined ratio of the face according to nose
-		int nose_div = eyeCenter.x - mouVec[0].centerNode.x;
+		//Old method changed on 20160615
+		/*int nose_div = eyeCenter.x - mouVec[0].centerNode.x;
 		if (nose_div != 0) {
 			float a = (float)(eyeCenter.y - mouVec[0].centerNode.y) / (eyeCenter.x - mouVec[0].centerNode.x);
 			float b = (float)(eyeCenter.y - a * eyeCenter.x);
@@ -1708,7 +1709,11 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 			dis_nose = (float)abs((noseCenter.x - eyeCenter.x));
 		}
 		dis_eyes = (float)sqrt(pow((eyeVec[0].pupil.y - eyeVec[1].pupil.y), 2) + pow((eyeVec[0].pupil.x - eyeVec[1].pupil.x), 2)) / 2;
-		nose_offset = dis_nose / dis_eyes;
+		nose_offset = dis_nose / dis_eyes;*/
+
+		//New method on 20160616
+		dis_nose = abs(noseCenter.x - src.cols / 2);
+		nose_offset = dis_nose / src.cols / 2;
 
 		cout << "The offset of nose: " << dis_nose << endl;
 
