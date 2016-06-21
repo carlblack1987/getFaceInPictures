@@ -25,8 +25,11 @@ CascadeClassifier face_cascade;
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
 //string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki_w\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\dis1\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -71,24 +74,47 @@ int main(void)
 	else if (openMode == 2) {
 
 		//Fan Image
-		//Right in front refine not ok
-		//Mat frame = imread(picFilePath + "20160530133431 04.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160614183220 13.jpg");
-		//Right 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 15.jpg");
-		//Right 75 down 15 degrees
-		//Mat frame = imread(picFilePath + "20160530133431 23.jpg");
-		//Right 75 up 15 degrees not ok
-		//Mat frame = imread(picFilePath + "20160530133431 26.jpg");
-		//Right 75 degrees ok
-		//Mat frame = imread(picFilePath + "20160530133431 21.jpg");
+		//Right in front ok
+		//Mat frame = imread(picFilePath + "20160601190750 009.jpg");
+		//Right 15 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 028.jpg");
+		//Right 30 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 030.jpg");
+		//Right 60 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 033.jpg");
+		//Left 15 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 048.jpg");
+		//Left 30 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 050.jpg");
+		//Left 60 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 053.jpg");
+		//Right 30 Up 10 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 138.jpg");
+		//Right 10 LeftYaw 10 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 400.jpg");
+		//Right 30 LeftYaw 10 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 423.jpg");
+		//Right 0 LeftYaw 15 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 501.jpg");
+		//Right 0 LeftYaw 25 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 502.jpg");
+		//Right 0 RightYaw 15 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 573.jpg");
+		//Right 30 RightYaw 20 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 623.jpg");
+		//RightYaw 30 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 669.jpg");
+		//Right 30 RightYaw 25 degrees ok
+		//Mat frame = imread(picFilePath + "20160601190750 674.jpg");
+		//Right 50 RightYaw 25 degrees
+		//Mat frame = imread(picFilePath + "20160601190750 676.jpg");
 
-		//Sasaki
+
+		//Sasaki Man
 		//Normal Problem: neck is included
 		//Mat frame = imread(picFilePath + "20160614191358 0091.jpg");
+		//Normal Problem: neck is included
+		//Mat frame = imread(picFilePath + "20160614191358 0245.jpg");
 
 		//Yoshida
 		//Normal_1 OK
@@ -114,13 +140,29 @@ int main(void)
 		//Left_Left_2 bad Problem: Left eye not detected
 		//Mat frame = imread(picFilePath + "20160614191547 928.jpg");
 		//Normal_3 OK
-		Mat frame = imread(picFilePath + "20160614191547 974.jpg");
+		//Mat frame = imread(picFilePath + "20160614191547 974.jpg");
 
 		//Yamazaki
 		//Normal bad Problem: clothes's color close to skin
 		//Mat frame = imread(picFilePath + "20160614192038 067.jpg");
 		//Left
 		//Mat frame = imread(picFilePath + "20160614192038 190.jpg");
+
+		//Yamazaki Woman
+		//Normal no
+		//Mat frame = imread(picFilePath + "20160620173336 02.jpg");
+		//Left 10 ok
+		//Mat frame = imread(picFilePath + "20160620173336 06.jpg");
+		//Left 15 no smile ruin the result
+		//Mat frame = imread(picFilePath + "20160620173336 33.jpg");
+		//Right 20 down 15 degrees not ok
+		//Mat frame = imread(picFilePath + "20160620173336 46.jpg");
+		//
+		//Mat frame = imread(picFilePath + "20160620173336 06.jpg");
+
+		//Distraction Evaluation
+		//Normal no
+		Mat frame = imread(picFilePath + "20160621145351 0780.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);

@@ -15,7 +15,7 @@ const int noseDistance = 30;
 const int noseVectorX = 17;
 const int noseVectorY = 13;
 const int noseAreaRange = 10;
-const float noseStartRatio = 0.3;
+const float noseStartRatio = 0.4;
 const float noseEndRatio = 0.85;
 const int eyeMinSize = 80;
 const int mouMinSize = 100;
@@ -30,6 +30,7 @@ const float eyeStartRatio = 0.3;
 const float eyeEndRatio = 0.95;
 const int cannyLowThres = 60;
 const int cannyHighThres = 120;
+const int skinSizeLimit = 5000;
 
 CascadeClassifier face, mouth, eye, nose;
 string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
@@ -485,7 +486,7 @@ Mat FaceTools::templateMatch(Mat &src, vector<string> templist, int match_method
 
 int FaceTools::detectFaceSkin(Mat &src) {
 	if (!src.empty()){
-		Mat frame = src.clone(), finalresult = src.clone(), faceArea;
+		Mat frame = src.clone(), finalresult = frame, faceArea = frame;
 		Mat faceBorder = getSobelBorder(frame);
 		
 		cvtColor(frame, grayframe, CV_BGR2GRAY);
@@ -665,7 +666,7 @@ int FaceTools::processImage(Mat &src, Mat &dst) {
 				this->getObjectSize(src, 1, i, j, size, judgeM);
 				cout << "current size: " << size << endl;
 				//If object size is less than 100 * 100, just filter it.
-				if (size < 7500)
+				if (size < skinSizeLimit)
 					eraseObject(src, i, j, 0, Vec3b(100, 100, 100));
 				else {
 					copyObject(src, dst, i, j);
@@ -839,16 +840,19 @@ Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 	}
 
 	//Erase all image out of this rectangle.
-	rectangle(dst, Point(minX, minY), Point(maxX, maxY), Scalar(0, 255, 0), 1, 1, 0);
-	//Use the face area to generate a new mat.
-	result = dst(Range(minY, maxY), Range(minX, maxX));
-	src = src(Range(minY, maxY), Range(minX, maxX));
+	if (minX < maxX && minY < maxY) {
+		rectangle(dst, Point(minX, minY), Point(maxX, maxY), Scalar(0, 255, 0), 1, 1, 0);
+		//Use the face area to generate a new mat.
+		result = dst(Range(minY, maxY), Range(minX, maxX));
+		src = src(Range(minY, maxY), Range(minX, maxX));
+	}
 	cout << "Function findFace end" << endl;
 	return Point(minX, minY);
 
 }
 
 int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
+	cout << "Function findFacialFeatures start" << endl;
 	vector<eyeInfo> eyeVec;
 	vector<mouthInfo> mouVec;
 	vector<Point>cornerVec;
@@ -905,6 +909,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 		printf(" No input frame detected.");
 		return 0;
 	}
+	cout << "Function findFacialFeatures end" << endl;
 	return 1;
 }
 
@@ -1713,7 +1718,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 
 		//New method on 20160616
 		dis_nose = abs(noseCenter.x - src.cols / 2);
-		nose_offset = dis_nose / src.cols / 2;
+		nose_offset = dis_nose / src.cols * 2;
 
 		cout << "The offset of nose: " << dis_nose << endl;
 
@@ -1723,6 +1728,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg4 += os.str();
 
 		//Calculate the final ratio of concentration
+		cout << "Offset = " << (float)angle_face / 90 << " + " << nose_offset << endl;
 		concentration = (float)angle_face / 90 + nose_offset;
 
 		cout << "Distraction: " << concentration << endl;
