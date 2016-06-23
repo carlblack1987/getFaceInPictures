@@ -1,9 +1,11 @@
 #include "stdafx.h"
 
 const float eyeSearchRowStartRatio = 0.102;
-const float eyeSearchRowEndRatio = 0.488;
+//const float eyeSearchRowEndRatio = 0.488;
+const float eyeSearchRowEndRatio = 0.600;
 const float mouthSearchRowStartRatio = 0.48;
-const float mouthSearchRowEndRatio = 0.850;
+//const float mouthSearchRowEndRatio = 0.850;
+const float mouthSearchRowEndRatio = 0.990;
 const float noseSearchRowStartRatio = 0.5;
 const float noseSearchRowEndRatio = 0.75;
 const float feaSearchColStartRatio = 0.02;
@@ -18,7 +20,7 @@ const int noseAreaRange = 10;
 const float noseStartRatio = 0.4;
 const float noseEndRatio = 0.85;
 const int eyeMinSize = 80;
-const int mouMinSize = 100;
+const int mouMinSize = 80;
 const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
@@ -1729,7 +1731,8 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 
 		//Calculate the final ratio of concentration
 		cout << "Offset = " << (float)angle_face / 90 << " + " << nose_offset << endl;
-		concentration = (float)angle_face / 90 + nose_offset;
+		//Dis = 1.286 * HA + 1.048 * FOF ¨C 0.0963
+		concentration = (float)angle_face / 90 * 1.286 + nose_offset * 1.048 - 0.0963;
 
 		cout << "Distraction: " << concentration << endl;
 

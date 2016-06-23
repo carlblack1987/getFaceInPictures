@@ -29,7 +29,7 @@ CascadeClassifier face_cascade;
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki_w\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\dis1\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\border\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -161,8 +161,28 @@ int main(void)
 		//Mat frame = imread(picFilePath + "20160620173336 06.jpg");
 
 		//Distraction Evaluation
-		//Normal no
-		Mat frame = imread(picFilePath + "20160621145351 0780.jpg");
+		//Normal no ok
+		//Mat frame = imread(picFilePath + "20160621152911 041.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 075.jpg");
+		//Normal bad skin detection failed
+		//Mat frame = imread(picFilePath + "20160621152911 082.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 114.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 118.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 120.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 140.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 153.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 158.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 164.jpg");
+		//Normal
+		Mat frame = imread(picFilePath + "20160621152911 172.jpg");
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);
