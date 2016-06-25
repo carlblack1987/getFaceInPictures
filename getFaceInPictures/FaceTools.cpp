@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
-const float eyeSearchRowStartRatio = 0.102;
+//const float eyeSearchRowStartRatio = 0.102;
+const float eyeSearchRowStartRatio = 0.080;
 //const float eyeSearchRowEndRatio = 0.488;
 const float eyeSearchRowEndRatio = 0.600;
 const float mouthSearchRowStartRatio = 0.48;
@@ -507,6 +508,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		}
 		this->processImage(testframe4, testframe5);
 		this->findFace(testframe5, frame, faceArea);
+		faceArea = faceArea(Range(0, faceArea.rows * 0.6), Range(0, faceArea.cols));
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 		//this->findMass(testframe5);
 		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
@@ -1232,7 +1234,7 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 					/*if (size < eyeSizeLimit && eyeWidthRatio < eyeWidthRatioLimit 
 						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10 && topNode.y > 5) {*/
 					if (size < eyeSizeLimit && eyeWidthRatio < eyeWidthRatioLimit
-						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10 && topNode.y > 5) {
+						&& eyeHeightRatio < eyeHeightRatioLimit && (topNode.x != 0 || topNode.y != 0) && topNode.x < src.cols - 10 && topNode.y > 2) {
 						int size = abs((botNode.x - topNode.x) * (botNode.y - topNode.y));
 						if (eyeVec.size() == 0) {
 							eyeInfo temp;
@@ -1435,8 +1437,8 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		else
 			border.x = eyeVec[0].pupil.x - noseAreaRange;
 		cout << "1111" << endl;
-		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ? 
-			Range(eyeVec[1].pupil.y, mouVec[0].centerNode.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y), 
+		srcClone = srcClone(eyeVec[0].pupil.y > eyeVec[1].pupil.y ?
+			Range(eyeVec[1].pupil.y, mouVec[0].centerNode.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
 			eyeVec[0].pupil.x + noseAreaRange > eyeVec[1].pupil.x ?
 			Range(getBoundValue(src, eyeVec[1].pupil.x - noseAreaRange, 2), getBoundValue(src, eyeVec[0].pupil.x + noseAreaRange, 2))
 			: Range(getBoundValue(src, eyeVec[0].pupil.x - noseAreaRange, 2), getBoundValue(src, eyeVec[1].pupil.x + noseAreaRange, 2)));
@@ -1455,10 +1457,13 @@ Mat FaceTools::getNoseArea(Mat &src, vector<eyeInfo> &eyeVec, vector<mouthInfo> 
 		srcClone = srcClone(eyeVec[0].pupil.y > mouVec[0].centerNode.y ?
 			Range(mouVec[0].centerNode.y, eyeVec[0].pupil.y) : Range(eyeVec[0].pupil.y, mouVec[0].centerNode.y),
 			eyeVec[0].pupil.x + noseAreaRange > mouVec[0].centerNode.x ?
-			Range(getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2), eyeVec[0].pupil.x) 
+			Range(getBoundValue(src, mouVec[0].centerNode.x - noseAreaRange, 2), eyeVec[0].pupil.x)
 			: Range(eyeVec[0].pupil.x, getBoundValue(src, mouVec[0].centerNode.x + noseAreaRange, 2)));
 		cout << "4444" << endl;
 	}
+
+	if (srcClone.rows <= 0 || srcClone.cols <= 0)
+		srcClone = src;
 
 	return srcClone;
 }

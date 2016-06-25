@@ -24,12 +24,12 @@ CascadeClassifier face_cascade;
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
 //string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki_w\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\border\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\border\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -181,8 +181,17 @@ int main(void)
 		//Mat frame = imread(picFilePath + "20160621152911 158.jpg");
 		//Normal ok
 		//Mat frame = imread(picFilePath + "20160621152911 164.jpg");
-		//Normal
-		Mat frame = imread(picFilePath + "20160621152911 172.jpg");
+		//Normal ok
+		//Mat frame = imread(picFilePath + "20160621152911 172.jpg");
+		//Yoshida ok
+		//Mat frame = imread(picFilePath + "20160614191547 287.jpg");
+		//Yoshida ok
+		//Mat frame = imread(picFilePath + "20160614191547 571.jpg");
+		//Sasaki ok
+		//Mat frame = imread(picFilePath + "20160614191358 0261.jpg");
+		//Sasaki
+		Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
+
 
 		if (!frame.empty()){
 			facetool.detectFaceSkin(frame);
