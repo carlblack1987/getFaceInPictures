@@ -3,7 +3,7 @@
 //const float eyeSearchRowStartRatio = 0.102;
 const float eyeSearchRowStartRatio = 0.080;
 //const float eyeSearchRowEndRatio = 0.488;
-const float eyeSearchRowEndRatio = 0.600;
+const float eyeSearchRowEndRatio = 0.500;
 const float mouthSearchRowStartRatio = 0.48;
 //const float mouthSearchRowEndRatio = 0.850;
 const float mouthSearchRowEndRatio = 0.990;
@@ -25,7 +25,7 @@ const int mouMinSize = 80;
 const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
-const int binaryThres = 40;
+const int binaryThres = 70;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
@@ -1256,12 +1256,15 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 							//The distance between two eyes can not be less than a value
 							int dis = sqrt(pow(eyeVec[0].cenNode.x - centerX, 2) + pow(eyeVec[0].cenNode.y - centerY, 2));
 							cout << "Object Distance " << dis << endl;
-							cout << "Object replaced" << endl;
-							if (dis >= eyesDistance)
+							if (dis >= eyesDistance) {
+								cout << "Object pushed" << endl;
 								eyeVec.push_back(temp);
+							}
 							//else if (size > eyeVec[0].size)
-							else if (centerY > eyeVec[0].cenNode.y)
+							else if (centerY > eyeVec[0].cenNode.y) {
+								cout << "Object replaced" << endl;
 								eyeVec[0] = temp;
+							}
 						}
 						else {
 							int minIndex = 0, minValue = 99999;

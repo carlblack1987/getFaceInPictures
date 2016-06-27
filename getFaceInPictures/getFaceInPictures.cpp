@@ -30,6 +30,7 @@ string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki_w\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\border\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\Saitou\\";
 string window_name = "Capture - Face detection";
 extern string outputpath;
 int filenumber; // Number of file to be saved
@@ -189,8 +190,14 @@ int main(void)
 		//Mat frame = imread(picFilePath + "20160614191547 571.jpg");
 		//Sasaki ok
 		//Mat frame = imread(picFilePath + "20160614191358 0261.jpg");
+		//Sasaki ok
+		//Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
+		//Sasaki ok
+		//Mat frame = imread(picFilePath + "20160614191358 0148.jpg");
 		//Sasaki
 		Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
+		//Saitou
+		//Mat frame = imread(picFilePath + "20160625165602 224.jpg");
 
 
 		if (!frame.empty()){
