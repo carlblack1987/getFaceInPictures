@@ -64,11 +64,11 @@ int main(void)
 				printf("an error while taking the frame from cap");
 			}
 			else {
-				//facetool.detectFaceSkinInVideo(frame);
+				facetool.detectFaceSkinInVideo(frame);
 				//Added 20160517, use calcOpticalFlowPyrLK to get the graphic change per frame.
-				pre = facetool.detectFaceCornerInVideo(frame, pre);
+				/*pre = facetool.detectFaceCornerInVideo(frame, pre);
 				if (cvWaitKey(33) == 27)
-					return 0;
+					return 0;*/
 			}
 		}
 	}
@@ -189,13 +189,13 @@ int main(void)
 		//Yoshida ok
 		//Mat frame = imread(picFilePath + "20160614191547 571.jpg");
 		//Sasaki ok
-		//Mat frame = imread(picFilePath + "20160614191358 0261.jpg");
+		Mat frame = imread(picFilePath + "20160614191358 0261.jpg");
 		//Sasaki ok
 		//Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
 		//Sasaki ok
 		//Mat frame = imread(picFilePath + "20160614191358 0148.jpg");
 		//Sasaki
-		Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
+		//Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
 		//Saitou
 		//Mat frame = imread(picFilePath + "20160625165602 224.jpg");
 

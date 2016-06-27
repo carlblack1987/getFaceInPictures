@@ -2,8 +2,8 @@
 
 //const float eyeSearchRowStartRatio = 0.102;
 const float eyeSearchRowStartRatio = 0.080;
-//const float eyeSearchRowEndRatio = 0.488;
-const float eyeSearchRowEndRatio = 0.500;
+const float eyeSearchRowEndRatio = 0.488;
+//const float eyeSearchRowEndRatio = 0.600;
 const float mouthSearchRowStartRatio = 0.48;
 //const float mouthSearchRowEndRatio = 0.850;
 const float mouthSearchRowEndRatio = 0.990;
@@ -25,7 +25,7 @@ const int mouMinSize = 80;
 const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
-const int binaryThres = 70;
+const int binaryThres = 50;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
@@ -34,6 +34,7 @@ const float eyeEndRatio = 0.95;
 const int cannyLowThres = 60;
 const int cannyHighThres = 120;
 const int skinSizeLimit = 5000;
+const double con_threshold = 0.3203;
 
 CascadeClassifier face, mouth, eye, nose;
 string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
@@ -513,11 +514,11 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		//this->findMass(testframe5);
 		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
 
-		vector<int> compression_params;
+		/*vector<int> compression_params;
 		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
 		compression_params.push_back(1);
 
-		imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);
+		imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);*/
 		//imwrite(outputpath + "faceGet_Test.jpg", faceArea, CV_IMWRITE_PXM_BINARY);
 
 		imshow("original", src);
@@ -557,24 +558,23 @@ int FaceTools::detectFaceSkinInVideo(Mat &src) {
 			}
 		}
 		this->processImage(testframe4, testframe5);
-		//imshow("7777", testframe5);
 		this->findFace(testframe5, frame, faceArea);
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
-		this->findMass(testframe5);
+		//this->findMass(testframe5);
 		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
 
-		vector<int> compression_params;
+		/*vector<int> compression_params;
 		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
 		compression_params.push_back(1);
 
-		imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);
+		imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);*/
 		//imwrite(outputpath + "faceGet_Test.jpg", faceArea, CV_IMWRITE_PXM_BINARY);
 
 		imshow("original", src);
 		//imshow("gray222", grayframe);
-		imshow("gray", testframe);
-		imshow("face", orginal2);
-		imshow("operated", testframe5);
+		//imshow("gray", testframe);
+		//imshow("face", orginal2);
+		//imshow("operated", testframe5);
 		imshow("find", frame);
 		imshow("result", faceArea);
 		//imshow("Eys Skin", eyeSkin);
@@ -865,7 +865,7 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 	imshow("RGB Face", src);
 
-	detectCornerPoints(src, src.clone(), Point(0, 0), cornerVec);
+	//detectCornerPoints(src, src.clone(), Point(0, 0), cornerVec);
 
 	if (!src.empty()){
 		Mat frame = src.clone();
@@ -1658,7 +1658,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		return 0;
 	}
 
-	String msg, msg2, msg3, msg4, msg5;
+	String msg, msg2, msg3, msg4, msg5, msg6;
 	float gradient_face = 0, inclined_face = 0, eye_size_com = 0, eye_offset = 0, nose_offset = 0, dis_nose = 0, dis_eyes = 0;
 	float concentration = 0;
 	int angle_face, divided;
@@ -1748,6 +1748,12 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg5 = "Dis: ";
 		os << concentration;
 		msg5 += os.str();
+
+		string result = concentration > con_threshold ? "Distract" : "Concentrate";
+		os.str("");
+		msg6 = "Status: ";
+		os << result;
+		msg6 += os.str();
 	}
 	//If just one eye and mouth are detected, just link them
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
@@ -1759,6 +1765,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 	//putText(src, msg3, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 	putText(src, msg4, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 	putText(src, msg5, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+	putText(src, msg6, Point(10, 80), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
 
 	return 1;
 }
