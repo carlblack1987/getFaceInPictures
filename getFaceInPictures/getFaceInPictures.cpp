@@ -24,8 +24,8 @@ CascadeClassifier face_cascade;
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160220122305\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
 //string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki_w\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
@@ -121,7 +121,7 @@ int main(void)
 		//Normal_1 OK
 		//Mat frame = imread(picFilePath + "20160614191547 070.jpg");
 		//Normal_2 OK
-		//Mat frame = imread(picFilePath + "20160614191547 087.jpg");
+		Mat frame = imread(picFilePath + "20160614191547 087.jpg");
 		//Left_1 OK
 		//Mat frame = imread(picFilePath + "20160614191547 129.jpg");
 		//Left_2 bad Problem: left eye not detected
@@ -189,7 +189,7 @@ int main(void)
 		//Yoshida ok
 		//Mat frame = imread(picFilePath + "20160614191547 571.jpg");
 		//Sasaki ok
-		Mat frame = imread(picFilePath + "20160614191358 0261.jpg");
+		//Mat frame = imread(picFilePath + "20160614191358 0261.jpg");
 		//Sasaki ok
 		//Mat frame = imread(picFilePath + "20160614191358 0327.jpg");
 		//Sasaki ok

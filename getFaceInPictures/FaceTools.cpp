@@ -509,7 +509,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		}
 		this->processImage(testframe4, testframe5);
 		this->findFace(testframe5, frame, faceArea);
-		faceArea = faceArea(Range(0, faceArea.rows * 0.6), Range(0, faceArea.cols));
+		//faceArea = faceArea(Range(0, faceArea.rows * 0.6), Range(0, faceArea.cols));
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 		//this->findMass(testframe5);
 		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
@@ -1750,6 +1750,7 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg5 += os.str();
 
 		string result = concentration > con_threshold ? "Distract" : "Concentrate";
+		cout << "Status: " << result << endl;
 		os.str("");
 		msg6 = "Status: ";
 		os << result;
