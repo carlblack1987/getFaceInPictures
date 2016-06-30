@@ -25,7 +25,7 @@ const int mouMinSize = 80;
 const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
-const int binaryThres = 50;
+const int binaryThres = 40;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
@@ -561,7 +561,7 @@ int FaceTools::detectFaceSkinInVideo(Mat &src) {
 		this->findFace(testframe5, frame, faceArea);
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 		//this->findMass(testframe5);
-		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+		//this->findFacialFeatures(faceArea, eyeSkin, faceArea);
 
 		/*vector<int> compression_params;
 		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
@@ -589,34 +589,41 @@ int FaceTools::detectFaceSkinInVideo(Mat &src) {
 Mat FaceTools::detectFaceCornerInVideo(Mat &src, Mat &pre) {
 	Mat srcClone = src.clone(), next;
 	vector<Point>cornerVec;
-	/*
-	//This part uses calcOpticalFlowPyrLK to get change by frame in the video.
-	vector<Point2f> prepoint, nextpoint;
-	vector<uchar> state;
-	vector<float>err;
-	if (src.empty())
-		return srcClone;
 
-	cvtColor(srcClone, next, CV_BGR2GRAY);
+	//if (!src.empty()){
+	//	Mat frame = src.clone(), finalresult = src.clone(), faceArea;
+	//	Mat faceBorder = getSobelBorder(frame);
 
-	if (!next.empty() && !pre.empty())
-	{
+	//	cvtColor(frame, grayframe, CV_BGR2GRAY);
+	//	equalizeHist(grayframe, testframe);
+	//	Mat thres_lab = this->GetSkin(frame, testframe);
+	//	Mat testframe2 = this->maskOnImage(thres_lab, frame);
+	//	Mat testframe3, testframe4, eyeSkin;
+	//	erode(testframe2, testframe3, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+	//	dilate(testframe3, testframe4, Mat(5, 5, CV_8U), Point(-1, -1), 2);
+	//	Mat orginal2 = testframe4.clone();
+	//	Mat testframe5 = testframe4.clone();
+	//	for (int i = 0; i < testframe5.rows; i++) {
+	//		for (int j = 0; j < testframe5.cols; j++) {
+	//			testframe5.ptr<Vec3b>(i)[j] = Vec3b(100, 100, 100);
+	//		}
+	//	}
+	//	this->processImage(testframe4, testframe5);
+	//	Point startP = this->findFace(testframe5, frame, faceArea);
+	//	this->findMass(testframe5);
+	//	//this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+	//	detectCornerPoints(faceArea, frame, startP, cornerVec);
 
-		goodFeaturesToTrack(pre, prepoint, 500, 0.001, 10, Mat(), 3, false, 0.04);
-		cornerSubPix(pre, prepoint, Size(10, 10), Size(-1, -1), TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
-		calcOpticalFlowPyrLK(pre, next, prepoint, nextpoint, state, err, Size(31, 31), 3);
-		for (int i = 0; i<state.size(); i++)
-		{
-			if (state[i] != 0)
-			{
-				line(frame, Point((int)prepoint[i].x, (int)prepoint[i].y), Point((int)nextpoint[i].x, (int)nextpoint[i].y), Scalar::all(-1));
-			}
-		}
-		namedWindow("frame", 0);
-		imshow("frame", frame);
-		waitKey(1);
-	}*/
-
+	//	imshow("original", src);
+	//	//imshow("gray222", grayframe);
+	//	imshow("gray", testframe);
+	//	imshow("face", orginal2);
+	//	imshow("operated", testframe5);
+	//	imshow("find", frame);
+	//	imshow("result", faceArea);
+	//	//imshow("Eys Skin", eyeSkin);
+	//	//imshow("Face Border", faceBorder);
+	//}
 	if (!src.empty()){
 		Mat frame = src.clone(), finalresult = src.clone(), faceArea;
 		Mat faceBorder = getSobelBorder(frame);
@@ -636,14 +643,21 @@ Mat FaceTools::detectFaceCornerInVideo(Mat &src, Mat &pre) {
 			}
 		}
 		this->processImage(testframe4, testframe5);
-		Point startP = this->findFace(testframe5, frame, faceArea);
-		this->findMass(testframe5);
-		//this->findFacialFeatures(faceArea, eyeSkin, faceArea);
-		detectCornerPoints(faceArea, frame, startP, cornerVec);
+		this->findFace(testframe5, frame, faceArea);
+		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
+		//this->findMass(testframe5);
+		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+
+		/*vector<int> compression_params;
+		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
+		compression_params.push_back(1);
+
+		imwrite(outputpath + "faceGet_Test.pgm", faceArea, compression_params);*/
+		//imwrite(outputpath + "faceGet_Test.jpg", faceArea, CV_IMWRITE_PXM_BINARY);
 
 		imshow("original", src);
 		//imshow("gray222", grayframe);
-		imshow("gray", testframe);
+		//imshow("gray", testframe);
 		imshow("face", orginal2);
 		imshow("operated", testframe5);
 		imshow("find", frame);

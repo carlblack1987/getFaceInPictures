@@ -6,7 +6,7 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-
+#include <Windows.h>
 #include <iostream>
 #include <stdio.h>
 
@@ -57,6 +57,7 @@ int main(void)
 
 		while (1)
 		{
+			Sleep(2000);
 			cap.read(frame);
 			cap >> frame;
 			if (!cap.read(frame))
@@ -64,11 +65,11 @@ int main(void)
 				printf("an error while taking the frame from cap");
 			}
 			else {
-				facetool.detectFaceSkinInVideo(frame);
+				//facetool.detectFaceSkinInVideo(frame);
 				//Added 20160517, use calcOpticalFlowPyrLK to get the graphic change per frame.
-				/*pre = facetool.detectFaceCornerInVideo(frame, pre);
+				pre = facetool.detectFaceCornerInVideo(frame, pre);
 				if (cvWaitKey(33) == 27)
-					return 0;*/
+					return 0;
 			}
 		}
 	}
