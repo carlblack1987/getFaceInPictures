@@ -11,6 +11,7 @@
 #include "findEyeCenter.h"
 #include <math.h>
 #include <queue>
+#include <time.h>
 
 #define PI 3.14159265f
 
@@ -98,7 +99,7 @@ public:
 	//Find the mass center of the face, src is the result of skin detection
 	int findMass(Mat &src);
 	//Find face with object
-	int findFacialFeatures(Mat &src, Mat &dst, Mat &result);
+	int findFacialFeatures(Mat &src, Mat &dst, Mat &result, Mat &Total);
 	//Find face with object using cascades
 	int findFacialFeaturesCascade(Mat &src, Mat &dst, Mat &result);
 	//Scan the hole
@@ -157,6 +158,8 @@ public:
 	Mat refineBinaryByCorner(Mat src, Mat &dst, vector<Point>&cornerVec, int threshold = 1);
 	//Check whether this binary object has corner point inside
 	int isHaveCorner(Mat src, vector<Point>&cornerVec, uchar a, int(&judge)[1000][1000], int &find, int threshold = 1, int x = 0, int y = 0);
+	//Write the current mat to file
+	int writeToFile(const Mat src, string path);
 };
 
 #endif

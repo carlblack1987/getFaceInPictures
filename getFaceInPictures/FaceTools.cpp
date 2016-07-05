@@ -25,7 +25,7 @@ const int mouMinSize = 80;
 const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
-const int binaryThres = 40;
+const int binaryThres = 50;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
@@ -35,6 +35,7 @@ const int cannyLowThres = 60;
 const int cannyHighThres = 120;
 const int skinSizeLimit = 5000;
 const double con_threshold = 0.3203;
+
 
 CascadeClassifier face, mouth, eye, nose;
 string opencvLibPath = "E:\\opencv\\sources\\data\\haarcascades\\";
@@ -51,6 +52,9 @@ Vec3b cwhite = Vec3b::all(255);
 Vec3b cblack = Vec3b::all(0);
 vector<string> templist;
 string outputpath = "E:\\faceTemplate\\FaceOutput\\";
+string successResult = "E:\\faceTemplate\\successResult\\";
+string totalResult = "E:\\faceTemplate\\totalResult\\";
+string failResult = "E:\\faceTemplate\\failResult\\";
 
 template <typename _Tp>
 void ELBP_(const Mat& src, Mat& dst, int radius, int neighbors) {
@@ -512,7 +516,7 @@ int FaceTools::detectFaceSkin(Mat &src) {
 		//faceArea = faceArea(Range(0, faceArea.rows * 0.6), Range(0, faceArea.cols));
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 		//this->findMass(testframe5);
-		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+		this->findFacialFeatures(faceArea, eyeSkin, faceArea, frame);
 
 		/*vector<int> compression_params;
 		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
@@ -646,7 +650,7 @@ Mat FaceTools::detectFaceCornerInVideo(Mat &src, Mat &pre) {
 		this->findFace(testframe5, frame, faceArea);
 		//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 		//this->findMass(testframe5);
-		this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+		this->findFacialFeatures(faceArea, eyeSkin, faceArea, frame);
 
 		/*vector<int> compression_params;
 		compression_params.push_back(CV_IMWRITE_PXM_BINARY);
@@ -869,7 +873,7 @@ Point FaceTools::findFace(Mat &src, Mat &dst, Mat &result) {
 
 }
 
-int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
+int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result, Mat &Total) {
 	cout << "Function findFacialFeatures start" << endl;
 	vector<eyeInfo> eyeVec;
 	vector<mouthInfo> mouVec;
@@ -919,7 +923,13 @@ int FaceTools::findFacialFeatures(Mat &src, Mat &dst, Mat &result) {
 
 		drawFacialFeatures(result, faceBin, eyeVec, mouVec, noseCenter);
 
-		calculateFace(result, eyeAreaOri, eyeVec, mouVec, noseCenter);
+		int flag = calculateFace(result, eyeAreaOri, eyeVec, mouVec, noseCenter);
+		//Write the result to file
+		if (1 == flag)
+			writeToFile(Total, successResult);
+		else
+			writeToFile(Total, failResult);
+		writeToFile(Total, totalResult);
 
 		dst = result;
 	}
@@ -1769,20 +1779,22 @@ int FaceTools::calculateFace(Mat &src, Mat &eyeBin, vector<eyeInfo> &eyeVec, vec
 		msg6 = "Status: ";
 		os << result;
 		msg6 += os.str();
+
+		putText(src, msg, Point(10, 20), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+		//putText(src, msg2, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+		//putText(src, msg3, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+		putText(src, msg4, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+		putText(src, msg5, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+		putText(src, msg6, Point(10, 80), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
+
+		return 1;
 	}
 	//If just one eye and mouth are detected, just link them
 	else if (eyeVec.size() == 1 && mouVec.size() == 1) {
 
 	}
 
-	putText(src, msg, Point(10, 20), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	//putText(src, msg2, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	//putText(src, msg3, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	putText(src, msg4, Point(10, 40), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	putText(src, msg5, Point(10, 60), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-	putText(src, msg6, Point(10, 80), CV_FONT_HERSHEY_COMPLEX, 0.5, Scalar(0, 0, 255));
-
-	return 1;
+	return 0;
 }
 
 int FaceTools::changeMouPosition(vector<mouthInfo> &mouVec, int x, int y) {
@@ -2136,7 +2148,7 @@ int FaceTools::findFaceInDB(char dbPath[256]) {
 					this->findFace(testframe5, frame, faceArea);
 					//imwrite(outputpath + "TotalFaceAvg" + temp + ".jpg", norm_0_255(mean.reshape(1, db[0].rows)));
 					this->findMass(testframe5);
-					this->findFacialFeatures(faceArea, eyeSkin, faceArea);
+					this->findFacialFeatures(faceArea, eyeSkin, faceArea, frame);
 
 					vector<int> compression_params;
 					compression_params.push_back(CV_IMWRITE_PXM_BINARY);
@@ -2559,5 +2571,13 @@ int FaceTools::isHaveCorner(Mat src, vector<Point>&cornerVec, uchar a, int(&judg
 		}
 	}
 
+	return 1;
+}
+
+int FaceTools::writeToFile(const Mat src, string path) {
+	time_t t = time(NULL);
+	char tmp[32];
+	strftime(tmp, sizeof(tmp), "%Y%m%d%H%M%S.jpg", localtime(&t));
+	imwrite(path + tmp, src);
 	return 1;
 }

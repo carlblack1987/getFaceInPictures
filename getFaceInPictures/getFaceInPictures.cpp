@@ -25,10 +25,10 @@ CascadeClassifier face_cascade;
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\20160418160120\\";
 //string picFilePath = "E:\\faceTemplate\\HeadPoseImageDatabase\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\sasaki\\";
-string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
+//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yoshida\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\yamazaki_w\\";
-//string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
+string picFilePath = "E:\\faceTemplate\\screenShotOutput\\fan\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\border\\";
 //string picFilePath = "E:\\faceTemplate\\screenShotOutput\\Saitou\\";
 string window_name = "Capture - Face detection";
@@ -81,7 +81,7 @@ int main(void)
 		//Right 15 degrees ok
 		//Mat frame = imread(picFilePath + "20160601190750 028.jpg");
 		//Right 30 degrees ok
-		//Mat frame = imread(picFilePath + "20160601190750 030.jpg");
+		Mat frame = imread(picFilePath + "20160601190750 030.jpg");
 		//Right 60 degrees ok
 		//Mat frame = imread(picFilePath + "20160601190750 033.jpg");
 		//Left 15 degrees ok
@@ -122,7 +122,7 @@ int main(void)
 		//Normal_1 OK
 		//Mat frame = imread(picFilePath + "20160614191547 070.jpg");
 		//Normal_2 OK
-		Mat frame = imread(picFilePath + "20160614191547 087.jpg");
+		//Mat frame = imread(picFilePath + "20160614191547 087.jpg");
 		//Left_1 OK
 		//Mat frame = imread(picFilePath + "20160614191547 129.jpg");
 		//Left_2 bad Problem: left eye not detected
