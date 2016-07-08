@@ -25,7 +25,7 @@ const int mouMinSize = 80;
 const int mouthPosRange = 0;
 const int eyesDistance = 40;
 const int eyeSizeLimit = 1250;
-const int binaryThres = 50;
+const int binaryThres = 40;
 const int eyeBrowDis = 40;
 const double eyeWidthRatioLimit = 0.50;
 const double eyeHeightRatioLimit = 0.64;
@@ -1356,8 +1356,8 @@ Mat FaceTools::getExactEyes(Mat &src, vector<eyeInfo> &eyeVec, int threshold) {
 		leftPupil.x += tempEye.x;
 		leftPupil.y += tempEye.y;
 		eyeVec[i].pupil = leftPupil;
-		//circle(result, leftPupil, 3, 1234);
-		//imshow("eye1", result);
+		circle(result, leftPupil, 3, 1234);
+		imshow("eye1", result);
 	}
 	
 	return result;
@@ -1367,8 +1367,8 @@ Mat FaceTools::getExactMouth(Mat &src, vector<mouthInfo> &mouVec, int threshold)
 	cout << "Get exact mouth start" << endl;
 	Mat srcClone = src.clone();
 	Mat srcClone2 = src.clone();
-	Mat srcClone3 = src.clone();
 	Mat result = src.clone();
+	imshow("Mouth part", srcClone);
 
 	//imshow("mouth area", src);
 	//Change the image from RGB to gray format and apply equalization

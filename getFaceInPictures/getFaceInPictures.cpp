@@ -77,11 +77,13 @@ int main(void)
 
 		//Fan Image
 		//Right in front ok
-		//Mat frame = imread(picFilePath + "20160601190750 009.jpg");
+		Mat frame = imread(picFilePath + "20160530133431 04.jpg");
+		//Right in front ok
+		//Mat frame = imread(picFilePath + "20160601190750 244.jpg");
 		//Right 15 degrees ok
 		//Mat frame = imread(picFilePath + "20160601190750 028.jpg");
 		//Right 30 degrees ok
-		Mat frame = imread(picFilePath + "20160601190750 030.jpg");
+		//Mat frame = imread(picFilePath + "20160601190750 030.jpg");
 		//Right 60 degrees ok
 		//Mat frame = imread(picFilePath + "20160601190750 033.jpg");
 		//Left 15 degrees ok
